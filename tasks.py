@@ -60,4 +60,10 @@ def make(ctx):
             args.append(f'-j{cpu_count}')
         command = shlex.join(args)
         print(command)
-        ctx.run(command)
+        ctx.run(command, pty=True)
+
+
+@task
+def run(ctx):
+    with ctx.cd(str(REPO_PATH)):
+        ctx.run(f'{BUILD_PATH}/bin/RBOT /dev/c920-* data/ship-hull.obj 1000')
