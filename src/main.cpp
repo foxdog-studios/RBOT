@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
     // distances for the pose detection template generation
     /* vector<float> distances = {400.0f, 800.0f, 1200.0f}; */
     // FDS
-    vector<float> distances = {300.0f};
+    vector<float> distances = {800.0f, 1000.0f, 1200.0f};
     // load 3D objects
     vector<Object3D*> objects;
     objects.push_back(new Object3D(argv[2],

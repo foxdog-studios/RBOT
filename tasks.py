@@ -45,9 +45,9 @@ def cmake(ctx):
 
         ctx.run(command, env={
             'CC': 'clang',
-            'CCFLAGS': '-Wall -O3 -ffast-math -flto',
+            'CCFLAGS': '-Wall -O3 -flto',
             'CXX': 'clang++',
-            'CXXFLAGS': '-Wall -O3 -ffast-math -flto',
+            'CXXFLAGS': '-Wall -O3 -flto',
         })
 
 
