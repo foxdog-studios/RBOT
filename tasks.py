@@ -1,4 +1,6 @@
 from __future__ import annotations
+import os
+import shlex
 from pathlib import Path
 
 from invoke import task
@@ -33,10 +35,29 @@ def setup(ctx, clean=True):
 def cmake(ctx):
     BUILD_PATH.mkdir(parents=True, exist_ok=True)
     with ctx.cd(str(BUILD_PATH)):
-        ctx.run('cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..')
+        command = shlex.join([
+            'cmake',
+            '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
+            '..'
+        ])
+
+        print(command)
+
+        ctx.run(command, env={
+            'CC': 'clang',
+            'CCFLAGS': '-Wall -O3 -ffast-math -flto',
+            'CXX': 'clang++',
+            'CXXFLAGS': '-Wall -O3 -ffast-math -flto',
+        })
 
 
 @task(default=True)
 def make(ctx):
     with ctx.cd(str(BUILD_PATH)):
-        ctx.run('make')
+        args = ['make']
+        cpu_count = os.cpu_count()
+        if cpu_count is not None:
+            args.append(f'-j{cpu_count}')
+        command = shlex.join(args)
+        print(command)
+        ctx.run(command)

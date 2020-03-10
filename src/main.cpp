@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     //objects.push_back(new Object3D("data/a_second_model.obj", -50, 0, 600, 30, 0, 180, 1.0, 0.55f, distances2));
 
     // create the pose estimator
-    auto poseEstimator = new PoseEstimator6D{width, height, zNear, zFar, K, distCoeffs, objects};
+    auto poseEstimator = PoseEstimator6D{width, height, zNear, zFar, K, distCoeffs, objects};
 
     // move the OpenGL context for offscreen rendering to the current thread, if run in a seperate QT worker thread (unnessary in this example)
     //RenderingEngine::Instance()->getContext()->moveToThread(this);
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
         }
 
         // the main pose uodate call
-        poseEstimator->estimatePoses(frame, true, false);
+        poseEstimator.estimatePoses(frame, true, false);
         cout << objects[0]->getPose() << endl;
 
         // render the models with the resulting pose estimates ontop of the input image
@@ -184,8 +184,8 @@ int main(int argc, char *argv[])
         // start/stop tracking the first object
         if(key == (int)'1')
         {
-            poseEstimator->toggleTracking(frame, 0, false);
-            poseEstimator->estimatePoses(frame, true, false);
+            poseEstimator.toggleTracking(frame, 0, false);
+            poseEstimator.estimatePoses(frame, true, false);
             timeout = 1;
             showHelp = !showHelp;
         }
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
         }
         // reset the system to the initial state
         if(key == (int)'r')
-            poseEstimator->reset();
+            poseEstimator.reset();
         // stop the demo
         if(key == (int)'c')
             break;
