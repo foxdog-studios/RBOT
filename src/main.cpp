@@ -173,8 +173,6 @@ int main(int argc, char* argv[])
     // estimation
     RenderingEngine::Instance()->makeCurrent();
 
-    int timeout = 0;
-
     bool showHelp = true;
 
     Mat frame;
@@ -216,14 +214,13 @@ int main(int argc, char* argv[])
 
         imshow("result", result);
 
-        int key = waitKey(timeout);
+        int key = cv::waitKey(1 /* delay */);
 
         // start/stop tracking the first object
         if (key == (int)'1')
         {
             poseEstimator.toggleTracking(frame, 0, false);
             poseEstimator.estimatePoses(frame, true, false);
-            timeout = 1;
             showHelp = !showHelp;
         }
         if (key == (int)'2') // the same for a second object

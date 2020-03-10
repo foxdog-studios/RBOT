@@ -70,7 +70,7 @@ RenderingEngine::RenderingEngine()
     currentLevel = 0;
 }
 
-RenderingEngine::~RenderingEngine(void)
+RenderingEngine::~RenderingEngine()
 {
     glDeleteTextures(1, &colorTextureID);
     glDeleteTextures(1, &depthTextureID);
