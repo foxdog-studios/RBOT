@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     auto const width = 640;
     auto const height = 480;
 
-    auto video = cv::VideoCapture();
+    auto video = cv::VideoCapture{};
 
     if (!video.open(device_path, cv::CAP_V4L2))
     {
@@ -166,7 +166,6 @@ int main(int argc, char *argv[])
 
         // the main pose uodate call
         poseEstimator.estimatePoses(frame, true, false);
-        cout << objects[0]->getPose() << endl;
 
         // render the models with the resulting pose estimates ontop of the input image
         Mat result = drawResultOverlay(objects, frame);
