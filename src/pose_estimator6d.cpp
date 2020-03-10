@@ -50,7 +50,8 @@ PoseEstimator6D::PoseEstimator6D(int width,
                                  float zFar,
                                  const cv::Matx33f& K,
                                  const cv::Matx14f& distCoeffs,
-                                 vector<Object3D*>& objects)
+                                 vector<Object3D*>& objects,
+                                 bool const generateObjectTemplates)
     : width{width}, height{height}, K{K}, distCoeffs{distCoeffs},
       optimizationEngine{width, height}
 {
@@ -74,7 +75,10 @@ PoseEstimator6D::PoseEstimator6D(int width,
         objects[i]->setModelID(i + 1);
         this->objects.push_back(objects[i]);
         this->objects[i]->initBuffers();
-        this->objects[i]->generateTemplates();
+        if (generateObjectTemplates)
+        {
+            this->objects[i]->generateTemplates();
+        }
         this->objects[i]->reset();
     }
 

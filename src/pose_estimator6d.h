@@ -82,7 +82,8 @@ class PoseEstimator6D
                     float zFar,
                     const cv::Matx33f& K,
                     const cv::Matx14f& distCoeffs,
-                    std::vector<Object3D*>& objects);
+                    std::vector<Object3D*>& objects,
+                    bool generateObjectTemplates);
 
     ~PoseEstimator6D();
 

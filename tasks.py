@@ -25,6 +25,7 @@ def setup(ctx, clean=True):
     charm.setup(ctx, packages=[
         'assimp',
         'cmake',
+        'cxxopts',
         'make',
         'opencv',
     ])
@@ -38,15 +39,18 @@ def cmake(ctx):
         command = shlex.join([
             'cmake',
             '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
-            '..'
+            '-DCMAKE_CXX_STANDARD=17',
+            '-DCMAKE_CXX_STANARD_REQUIRED=ON',
+            '-DCMAKE_CXX_EXTENSIONS=OFF',
+            '..',
         ])
 
         print(command)
 
         ctx.run(command, env={
-            'CC': 'clang',
+            'CC': 'ccache clang',
             'CCFLAGS': '-Wall -O3 -flto',
-            'CXX': 'clang++',
+            'CXX': 'ccache clang++',
             'CXXFLAGS': '-Wall -O3 -flto',
         })
 
@@ -61,9 +65,3 @@ def make(ctx):
         command = shlex.join(args)
         print(command)
         ctx.run(command, pty=True)
-
-
-@task
-def run(ctx):
-    with ctx.cd(str(REPO_PATH)):
-        ctx.run(f'{BUILD_PATH}/bin/RBOT /dev/c920-* data/ship-hull.obj 1000')

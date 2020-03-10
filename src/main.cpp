@@ -33,7 +33,6 @@
  * along with RBOT. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <chrono>
 #include <iostream>
 #include <string>
 
@@ -42,6 +41,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 
+#include "Arguments.hpp"
 #include "object3d.h"
 #include "pose_estimator6d.h"
 
@@ -90,15 +90,15 @@ cv::Mat drawResultOverlay(const vector<Object3D*>& objects,
 int main(int argc, char* argv[])
 {
     QApplication a(argc, argv);
+    auto const args = fds::Arguments{argc, argv};
 
     // FDS hard coded
-    auto const device_path = argv[1];
     auto const width = 640;
     auto const height = 480;
 
     auto video = cv::VideoCapture{};
 
-    if (!video.open(device_path, cv::CAP_V4L2))
+    if (!video.open(args.get_device_path(), cv::CAP_V4L2))
     {
         std::cerr << "Unable to open video device\n";
         return -1;
@@ -141,10 +141,10 @@ int main(int argc, char* argv[])
     vector<float> distances = {800.0f, 1000.0f, 1200.0f};
     // load 3D objects
     vector<Object3D*> objects;
-    objects.push_back(new Object3D(argv[2],
+    objects.push_back(new Object3D(args.get_object_path(),
                                    15,
                                    -45,
-                                   std::stof(argv[3]),
+                                   args.get_z_distance(),
                                    115,
                                    0,
                                    45,
@@ -154,16 +154,14 @@ int main(int argc, char* argv[])
     // objects.push_back(new Object3D("data/a_second_model.obj", -50, 0, 600,
     // 30, 0, 180, 1.0, 0.55f, distances2));
 
-    // Create the pose estimator.
-    std::cout << "Creating 6DOF pose estimator...\n" << std::flush;
-    auto const start = std::chrono::system_clock::now();
-    auto poseEstimator =
-        PoseEstimator6D{width, height, zNear, zFar, K, distCoeffs, objects};
-    auto const end = std::chrono::system_clock::now();
-    auto const elapsed =
-        std::chrono::duration_cast<std::chrono::seconds>(end - start);
-    std::cout << "Created 6DOF pose estimator in " << elapsed.count() << 's'
-              << std::flush;
+    auto poseEstimator = PoseEstimator6D{width,
+                                         height,
+                                         zNear,
+                                         zFar,
+                                         K,
+                                         distCoeffs,
+                                         objects,
+                                         args.get_generate_object_templates()};
 
     // move the OpenGL context for offscreen rendering to the current thread, if
     // run in a seperate QT worker thread (unnessary in this example)
