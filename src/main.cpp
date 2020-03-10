@@ -42,9 +42,9 @@
 #include <opencv2/highgui.hpp>
 
 #include "Arguments.hpp"
+#include "Pose.hpp"
 #include "object3d.h"
 #include "pose_estimator6d.h"
-#include "Pose.hpp"
 
 using namespace std;
 using namespace cv;
@@ -93,14 +93,12 @@ cv::Mat drawResultOverlay(const vector<Object3D*>& objects,
     return result;
 }
 
-
-
 int main(int argc, char* argv[])
 {
     QApplication a(argc, argv);
     auto const args = fds::Arguments{argc, argv};
 
-    // FDS hard coded
+    // Camera image size
     auto const width = 640;
     auto const height = 480;
 
@@ -111,12 +109,6 @@ int main(int argc, char* argv[])
         std::cerr << "Unable to open video device\n";
         return -1;
     }
-
-    /* if (!video.set(CV_CAP_PROP_FOURCC, CV_FOURCC('M', 'J', 'P', 'G'))) */
-    /* { */
-    /*     std::cerr << "Unable to set capture format\n"; */
-    /*     return -1; */
-    /* } */
 
     if (!video.set(cv::CAP_PROP_FRAME_WIDTH, width))
     {
@@ -130,15 +122,11 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    // camera image size
-    /* int width = 640; */
-    /* int height = 512; */
+    // Near and far plane of the OpenGL view frustum.
+    auto const zNear = 10.0f;
+    auto const zFar = 10000.0f;
 
-    // near and far plane of the OpenGL view frustum
-    float zNear = 10.0;
-    float zFar = 10000.0;
-
-    // camera instrinsics
+    // Camera instrinsics
     // FDS hardcoded from tracker/local/tracker.yaml
     Matx33f K = Matx33f(627.746, 0, 327.113, 0, 627.746, 242.4199, 0, 0, 1);
     Matx14f distCoeffs = Matx14f(0.0, -0.0678, 0.0153, 0.0);
@@ -147,25 +135,21 @@ int main(int argc, char* argv[])
     /* vector<float> distances = {400.0f, 800.0f, 1200.0f}; */
     // FDS
     vector<float> distances = {800.0f, 1000.0f, 1200.0f};
-    // load 3D objects
-    vector<Object3D*> objects;
 
-    auto tz_arg = args.get_z_distance();
+    auto pose = fds::Pose{15, -45, args.get_z_distance(), 115, 0, 45};
 
-    auto pose = fds::Pose{15, -45, tz_arg, 115, 0, 45};
-    auto object = new Object3D(args.get_object_path(),
-                               pose.tx,
-                               pose.ty,
-                               pose.tz,
-                               pose.alpha,
-                               pose.beta,
-                               pose.gamma,
-                               1.0,
-                               0.55f,
-                               distances);
-    objects.push_back(object);
-    // objects.push_back(new Object3D("data/a_second_model.obj", -50, 0, 600,
-    // 30, 0, 180, 1.0, 0.55f, distances2));
+    auto object = Object3D(args.get_object_path(),
+                           pose.tx,
+                           pose.ty,
+                           pose.tz,
+                           pose.alpha,
+                           pose.beta,
+                           pose.gamma,
+                           1.0,
+                           0.55f,
+                           distances);
+
+    auto objects = std::vector<Object3D*>{&object};
 
     auto poseEstimator = PoseEstimator6D{width,
                                          height,
@@ -201,7 +185,7 @@ int main(int argc, char* argv[])
 
     TrackbarAction handleX = [&object, &pose](int newTx) {
         pose.setTx(newTx);
-        object->setPose(pose);
+        object.setPose(pose);
     };
 
     cv::createTrackbar(
@@ -212,7 +196,7 @@ int main(int argc, char* argv[])
 
     TrackbarAction handleY = [&object, &pose](int newTy) {
         pose.setTy(newTy);
-        object->setPose(pose);
+        object.setPose(pose);
     };
 
     cv::createTrackbar(
@@ -223,7 +207,7 @@ int main(int argc, char* argv[])
 
     TrackbarAction handleZ = [&object, &pose](int newTz) {
         pose.setTz(newTz);
-        object->setPose(pose);
+        object.setPose(pose);
     };
 
     cv::createTrackbar(
@@ -234,7 +218,7 @@ int main(int argc, char* argv[])
 
     TrackbarAction handleAlpha = [&object, &pose](int newAlpha) {
         pose.setAlpha(newAlpha);
-        object->setPose(pose);
+        object.setPose(pose);
     };
 
     cv::createTrackbar("alpha",
@@ -243,7 +227,6 @@ int main(int argc, char* argv[])
                        alpha_max,
                        trackbarCallback,
                        (void*)&handleAlpha);
-    
 
     while (true)
     {
@@ -309,12 +292,5 @@ int main(int argc, char* argv[])
 
     // clean up
     RenderingEngine::Instance()->destroy();
-
-    for (int i = 0; i < objects.size(); i++)
-    {
-        delete objects[i];
-    }
-
-    objects.clear();
     video.release();
 }
