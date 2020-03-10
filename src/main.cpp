@@ -228,6 +228,36 @@ int main(int argc, char* argv[])
                        trackbarCallback,
                        (void*)&handleAlpha);
 
+    int beta = pose.beta;
+    auto beta_max = 360;
+
+    TrackbarAction handleBeta = [&object, &pose](int newBeta) {
+        pose.setBeta(newBeta);
+        object.setPose(pose);
+    };
+
+    cv::createTrackbar("beta",
+                       window_name,
+                       &beta,
+                       beta_max,
+                       trackbarCallback,
+                       (void*)&handleBeta);
+
+    int gamma = pose.gamma;
+    auto gamma_max = 360;
+
+    TrackbarAction handleGamma = [&object, &pose](int newGamma) {
+        pose.setGamma(newGamma);
+        object.setPose(pose);
+    };
+
+    cv::createTrackbar("gamma",
+                       window_name,
+                       &gamma,
+                       gamma_max,
+                       trackbarCallback,
+                       (void*)&handleGamma);
+    
     while (true)
     {
         // Read the next frame from the webcam.
