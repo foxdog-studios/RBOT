@@ -47,6 +47,7 @@
 
 using namespace std;
 using namespace cv;
+using TrackbarAction = std::function<void(int)>;
 
 cv::Mat drawResultOverlay(const vector<Object3D*>& objects,
                           const cv::Mat& frame)
@@ -78,9 +79,13 @@ cv::Mat drawResultOverlay(const vector<Object3D*>& objects,
             Vec3b color = rendering.at<Vec3b>(y, x);
             if (depth.at<float>(y, x) != 0.0f)
             {
-                result.at<Vec3b>(y, x)[0] = color[2];
-                result.at<Vec3b>(y, x)[1] = color[1];
-                result.at<Vec3b>(y, x)[2] = color[0];
+                constexpr auto a = 0.4;
+                auto r = result.at<Vec3b>(y, x)[0];
+                auto g = result.at<Vec3b>(y, x)[1];
+                auto b = result.at<Vec3b>(y, x)[2];
+                result.at<Vec3b>(y, x)[0] = color[2] * a + r * (1 - a);
+                result.at<Vec3b>(y, x)[1] = color[1] * a + g * (1 - a);
+                result.at<Vec3b>(y, x)[2] = color[0] * a + b * (1 - a);
             }
         }
     }
@@ -174,6 +179,21 @@ int main(int argc, char* argv[])
     bool showHelp = true;
 
     Mat frame;
+
+    cv::namedWindow("result");
+
+    int tx = 0;
+    int tx_max = 100;
+
+    cv::TrackbarCallback trackbarCallback = [](int pos, void* userdata) {
+        (*(TrackbarAction*)userdata)(pos);
+    };
+
+    TrackbarAction handleX = [&](int pos) {
+        std::cout << "trackbar 1 action" << std::endl;
+    };
+    cv::createTrackbar(
+        "x", "result", &tx, tx_max, trackbarCallback, (void*)&handleX);
 
     while (true)
     {
