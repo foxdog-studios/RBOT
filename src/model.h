@@ -42,6 +42,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include "Pose.hpp"
 #include "transformations.h"
 
 /**
@@ -151,6 +152,15 @@ class Model
      *  @param  T_cm The new 6DOF pose of the model.
      */
     void setPose(const cv::Matx44f& T_cm);
+
+    auto setPose(fds::Pose const& pose) noexcept -> void;
+
+    auto setPose(float tx,
+                 float ty,
+                 float tz,
+                 float alpha,
+                 float beta,
+                 float gamma) noexcept -> void;
 
     /**
      *  Sets a new initial model pose to a given 6DOF rigid body

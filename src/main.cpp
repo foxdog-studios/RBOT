@@ -44,6 +44,7 @@
 #include "Arguments.hpp"
 #include "object3d.h"
 #include "pose_estimator6d.h"
+#include "Pose.hpp"
 
 using namespace std;
 using namespace cv;
@@ -91,6 +92,8 @@ cv::Mat drawResultOverlay(const vector<Object3D*>& objects,
     }
     return result;
 }
+
+
 
 int main(int argc, char* argv[])
 {
@@ -146,16 +149,21 @@ int main(int argc, char* argv[])
     vector<float> distances = {800.0f, 1000.0f, 1200.0f};
     // load 3D objects
     vector<Object3D*> objects;
-    objects.push_back(new Object3D(args.get_object_path(),
-                                   15,
-                                   -45,
-                                   args.get_z_distance(),
-                                   115,
-                                   0,
-                                   45,
-                                   1.0,
-                                   0.55f,
-                                   distances));
+
+    auto tz_arg = args.get_z_distance();
+
+    auto pose = fds::Pose{15, -45, tz_arg, 115, 0, 45};
+    auto object = new Object3D(args.get_object_path(),
+                               pose.tx,
+                               pose.ty,
+                               pose.tz,
+                               pose.alpha,
+                               pose.beta,
+                               pose.gamma,
+                               1.0,
+                               0.55f,
+                               distances);
+    objects.push_back(object);
     // objects.push_back(new Object3D("data/a_second_model.obj", -50, 0, 600,
     // 30, 0, 180, 1.0, 0.55f, distances2));
 
@@ -180,20 +188,62 @@ int main(int argc, char* argv[])
 
     Mat frame;
 
-    cv::namedWindow("result");
+    constexpr auto window_name = "RBOT";
 
-    int tx = 0;
-    int tx_max = 100;
+    cv::namedWindow(window_name);
 
     cv::TrackbarCallback trackbarCallback = [](int pos, void* userdata) {
         (*(TrackbarAction*)userdata)(pos);
     };
 
-    TrackbarAction handleX = [&](int pos) {
-        std::cout << "trackbar 1 action" << std::endl;
+    int tx = pose.tx;
+    int tx_max = 100;
+
+    TrackbarAction handleX = [&object, &pose](int newTx) {
+        pose.setTx(newTx);
+        object->setPose(pose);
     };
+
     cv::createTrackbar(
-        "x", "result", &tx, tx_max, trackbarCallback, (void*)&handleX);
+        "x", window_name, &tx, tx_max, trackbarCallback, (void*)&handleX);
+
+    int ty = pose.ty;
+    int ty_max = 100;
+
+    TrackbarAction handleY = [&object, &pose](int newTy) {
+        pose.setTy(newTy);
+        object->setPose(pose);
+    };
+
+    cv::createTrackbar(
+        "y", window_name, &ty, ty_max, trackbarCallback, (void*)&handleY);
+
+    int tz = pose.tz;
+    int tz_max = 1500;
+
+    TrackbarAction handleZ = [&object, &pose](int newTz) {
+        pose.setTz(newTz);
+        object->setPose(pose);
+    };
+
+    cv::createTrackbar(
+        "z", window_name, &tz, tz_max, trackbarCallback, (void*)&handleZ);
+
+    int alpha = pose.alpha;
+    auto alpha_max = 360;
+
+    TrackbarAction handleAlpha = [&object, &pose](int newAlpha) {
+        pose.setAlpha(newAlpha);
+        object->setPose(pose);
+    };
+
+    cv::createTrackbar("alpha",
+                       window_name,
+                       &alpha,
+                       alpha_max,
+                       trackbarCallback,
+                       (void*)&handleAlpha);
+    
 
     while (true)
     {
@@ -230,7 +280,7 @@ int main(int argc, char* argv[])
                     1);
         }
 
-        imshow("result", result);
+        imshow(window_name, result);
 
         int key = cv::waitKey(1 /* delay */);
 

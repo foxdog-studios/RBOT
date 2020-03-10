@@ -61,13 +61,7 @@ Model::Model(const string modelFilename,
 
     buffersInitialsed = false;
 
-    T_i = Transformations::translationMatrix(tx, ty, tz) *
-          Transformations::rotationMatrix(alpha, Vec3f(1, 0, 0)) *
-          Transformations::rotationMatrix(beta, Vec3f(0, 1, 0)) *
-          Transformations::rotationMatrix(gamma, Vec3f(0, 0, 1)) *
-          Matx44f::eye();
-
-    T_cm = T_i;
+    setPose(tx, ty, tz, alpha, beta, gamma);
 
     scaling = scale;
 
@@ -169,6 +163,24 @@ Matx44f Model::getPose()
 void Model::setPose(const Matx44f& T_cm)
 {
     this->T_cm = T_cm;
+}
+
+auto Model::setPose(fds::Pose const& pose) noexcept -> void
+{
+    setPose(pose.tx, pose.ty, pose.tz, pose.alpha, pose.beta, pose.gamma);
+}
+
+auto Model::setPose(
+    float tx, float ty, float tz, float alpha, float beta, float gamma) noexcept
+    -> void
+{
+    T_i = Transformations::translationMatrix(tx, ty, tz) *
+          Transformations::rotationMatrix(alpha, Vec3f(1, 0, 0)) *
+          Transformations::rotationMatrix(beta, Vec3f(0, 1, 0)) *
+          Transformations::rotationMatrix(gamma, Vec3f(0, 0, 1)) *
+          Matx44f::eye();
+
+    T_cm = T_i;
 }
 
 void Model::setInitialPose(const Matx44f& T_cm)
