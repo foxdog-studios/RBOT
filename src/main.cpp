@@ -33,6 +33,7 @@
  * along with RBOT. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <string>
 
 #include <QApplication>
@@ -50,18 +51,18 @@ cv::Mat drawResultOverlay(const vector<Object3D*>& objects, const cv::Mat& frame
 {
     // render the models with phong shading
     RenderingEngine::Instance()->setLevel(0);
-    
+
     vector<Point3f> colors;
     colors.push_back(Point3f(1.0, 0.5, 0.0));
     //colors.push_back(Point3f(0.2, 0.3, 1.0));
     RenderingEngine::Instance()->renderShaded(vector<Model*>(objects.begin(), objects.end()), GL_FILL, colors, true);
-    
+
     // download the rendering to the CPU
     Mat rendering = RenderingEngine::Instance()->downloadFrame(RenderingEngine::RGB);
-    
+
     // download the depth buffer to the CPU
     Mat depth = RenderingEngine::Instance()->downloadFrame(RenderingEngine::DEPTH);
-    
+
     // compose the rendering with the current camera image for demo purposes (can be done more efficiently directly in OpenGL)
     Mat result = frame.clone();
     for(int y = 0; y < frame.rows; y++)
@@ -86,8 +87,8 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    // FDS hard coded 
-    auto const device_path = "/dev/c920-2";
+    // FDS hard coded
+    auto const device_path = "/dev/c920-1";
     auto const width = 640;
     auto const height = 480;
 
@@ -120,44 +121,42 @@ int main(int argc, char *argv[])
     // camera image size
     /* int width = 640; */
     /* int height = 512; */
-    
+
     // near and far plane of the OpenGL view frustum
     float zNear = 10.0;
     float zFar = 10000.0;
-    
+
     // camera instrinsics
     // FDS hardcoded from tracker/local/tracker.yaml
     Matx33f K = Matx33f(627.746, 0, 327.113, 0, 627.746, 242.4199, 0, 0, 1);
     Matx14f distCoeffs =  Matx14f(0.0, -0.0678, 0.0153, 0.0);
-    
+
     // distances for the pose detection template generation
     /* vector<float> distances = {400.0f, 800.0f, 1200.0f}; */
     // FDS
     vector<float> distances = {300.0f, 500.0f, 700.0f};
-    
     // load 3D objects
     vector<Object3D*> objects;
     objects.push_back(new Object3D(argv[1], 15, -45, std::stof(argv[2]), 115, 0, 45, 1.0, 0.55f, distances));
     //objects.push_back(new Object3D("data/a_second_model.obj", -50, 0, 600, 30, 0, 180, 1.0, 0.55f, distances2));
-    
+
     // create the pose estimator
-    PoseEstimator6D* poseEstimator = new PoseEstimator6D( width, height, zNear, zFar, K, distCoeffs, objects);
-    
+    auto poseEstimator = new PoseEstimator6D{width, height, zNear, zFar, K, distCoeffs, objects};
+
     // move the OpenGL context for offscreen rendering to the current thread, if run in a seperate QT worker thread (unnessary in this example)
     //RenderingEngine::Instance()->getContext()->moveToThread(this);
-    
+
     // active the OpenGL context for the offscreen rendering engine during pose estimation
     RenderingEngine::Instance()->makeCurrent();
-    
+
     int timeout = 0;
-    
+
     bool showHelp = true;
-    
+
     Mat frame;
     while(true)
     {
         // obtain an input image
-        /* frame = imread("data/frame.png"); */
 
         video >> frame;
 
@@ -165,25 +164,23 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        
         // the main pose uodate call
         poseEstimator->estimatePoses(frame, true, false);
-        
         cout << objects[0]->getPose() << endl;
-        
+
         // render the models with the resulting pose estimates ontop of the input image
         Mat result = drawResultOverlay(objects, frame);
-        
+
         if(showHelp)
         {
             putText(result, "Press '1' to initialize", Point(150, 250), FONT_HERSHEY_DUPLEX, 1.0, Scalar(255, 255, 255), 1);
             putText(result, "or 'c' to quit", Point(205, 285), FONT_HERSHEY_DUPLEX, 1.0, Scalar(255, 255, 255), 1);
         }
-        
+
         imshow("result", result);
-        
+
         int key = waitKey(timeout);
-        
+
         // start/stop tracking the first object
         if(key == (int)'1')
         {
@@ -204,18 +201,18 @@ int main(int argc, char *argv[])
         if(key == (int)'c')
             break;
     }
-    
+
     // deactivate the offscreen rendering OpenGL context
     RenderingEngine::Instance()->doneCurrent();
-    
+
     // clean up
     RenderingEngine::Instance()->destroy();
-    
+
     for(int i = 0; i < objects.size(); i++)
     {
         delete objects[i];
     }
+
     objects.clear();
-    delete poseEstimator;
     video.release();
 }
