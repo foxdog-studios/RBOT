@@ -45,6 +45,7 @@
 #include "Pose.hpp"
 #include "object3d.h"
 #include "pose_estimator6d.h"
+#include "video.hpp"
 
 using namespace std;
 using namespace cv;
@@ -102,25 +103,9 @@ int main(int argc, char* argv[])
     auto const width = 640;
     auto const height = 480;
 
-    auto video = cv::VideoCapture{};
-
-    if (!video.open(args.get_device_path(), cv::CAP_V4L2))
-    {
-        std::cerr << "Unable to open video device\n";
-        return -1;
-    }
-
-    if (!video.set(cv::CAP_PROP_FRAME_WIDTH, width))
-    {
-        std::cerr << "Unable to set capture frame width\n";
-        return -1;
-    }
-
-    if (!video.set(cv::CAP_PROP_FRAME_HEIGHT, height))
-    {
-        std::cerr << "Unable to set capture frame height\n";
-        return -1;
-    }
+    auto video = args.useCVVideo()
+                     ? fds::makeCVVideo(args.getDevicePath(), width, height)
+                     : fds::makeSHMVideo();
 
     // Near and far plane of the OpenGL view frustum.
     auto const zNear = 10.0f;
@@ -136,9 +121,9 @@ int main(int argc, char* argv[])
     // FDS
     vector<float> distances = {800.0f, 1000.0f, 1200.0f};
 
-    auto pose = fds::Pose{15, -45, args.get_z_distance(), 115, 0, 45};
+    auto pose = fds::Pose{15, -45, args.getZDistance(), 115, 0, 45};
 
-    auto object = Object3D(args.get_object_path(),
+    auto object = Object3D(args.getObjectPath(),
                            pose.tx,
                            pose.ty,
                            pose.tz,
@@ -158,7 +143,7 @@ int main(int argc, char* argv[])
                                          K,
                                          distCoeffs,
                                          objects,
-                                         args.get_generate_object_templates()};
+                                         args.getGenerateObjectTemplates()};
 
     // move the OpenGL context for offscreen rendering to the current thread, if
     // run in a seperate QT worker thread (unnessary in this example)
@@ -169,8 +154,6 @@ int main(int argc, char* argv[])
     RenderingEngine::Instance()->makeCurrent();
 
     bool showHelp = true;
-
-    Mat frame;
 
     constexpr auto window_name = "RBOT";
 
@@ -257,11 +240,10 @@ int main(int argc, char* argv[])
                        gamma_max,
                        trackbarCallback,
                        (void*)&handleGamma);
-    
-    while (true)
+
+    for (cv::Mat frame;;)
     {
-        // Read the next frame from the webcam.
-        video >> frame;
+        video->tryReadFrameInto(frame);
 
         if (frame.empty())
         {
@@ -322,5 +304,4 @@ int main(int argc, char* argv[])
 
     // clean up
     RenderingEngine::Instance()->destroy();
-    video.release();
 }

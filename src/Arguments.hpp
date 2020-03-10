@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <optional>
 
 namespace fds
 {
@@ -7,15 +8,24 @@ namespace fds
     {
       public:
         Arguments(int argc, char** argv) noexcept;
-        auto get_device_path() const noexcept -> std::filesystem::path;
-        auto get_generate_object_templates() const noexcept -> bool;
-        auto get_object_path() const noexcept -> std::filesystem::path;
-        auto get_z_distance() const noexcept -> float;
+        auto getDevicePath() const -> std::filesystem::path;
+        auto getGenerateObjectTemplates() const noexcept -> bool;
+        auto getObjectPath() const noexcept -> std::filesystem::path;
+        auto getZDistance() const noexcept -> float;
+        auto useCVVideo() const noexcept -> bool;
+        auto useSHMVideo() const noexcept -> bool;
 
       private:
-        std::filesystem::path device_path;
-        bool generate_object_templates;
-        std::filesystem::path object_path;
-        float z_distance;
+        enum class VideoSource
+        {
+            cv,
+            shm,
+        };
+
+        std::optional<std::filesystem::path> devicePath;
+        bool generateObjectTemplates;
+        std::filesystem::path objectPath;
+        VideoSource videoSource;
+        float zDistance;
     };
 } // namespace fds

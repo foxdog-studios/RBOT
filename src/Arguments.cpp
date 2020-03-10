@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <glob.h>
 #include <iostream>
+#include <optional>
 #include <string>
 
 #include <cxxopts.hpp>
@@ -29,9 +30,11 @@ namespace fds
         // clang-format off
         options.add_options()
             ("h,help", "print is message")
-            ("d,device", "video device path", device_value)
+            ("d,device", "cv video device path", device_value)
             ("g,gen-object-templates", "generate object templates",
              cxxopts::value<bool>()->default_value("false"))
+            ("v,video", "video source, either cv or shm",
+             cxxopts::value<std::string>()->default_value("cv"))
             ("z,z-distance", "initial z-distance of object",
              cxxopts::value<float>()->default_value("1000"))
             ("object", "object file path", cxxopts::value<std::string>());
@@ -54,6 +57,24 @@ namespace fds
             ::exit(1);
         }
 
+        auto const videoSourceStr = result["video"].as<std::string>();
+
+        if (videoSourceStr == "cv")
+        {
+            this->videoSource = VideoSource::cv;
+        }
+        else if (videoSourceStr == "shm")
+        {
+            this->videoSource = VideoSource::shm;
+        }
+        else
+        {
+            std::cerr << '"' << videoSourceStr
+                      << "\" is not a video source, choice either cv or shm\n"
+                      << std::flush;
+            ::exit(1);
+        }
+
         if (!device_value->has_default() && result.count("device") == 0)
         {
             std::cerr << "No video device found, use -d/--device\n"
@@ -61,30 +82,41 @@ namespace fds
             ::exit(1);
         }
 
-        this->device_path = result["device"].as<std::string>();
-        this->generate_object_templates =
+        this->devicePath = result["device"].as<std::string>();
+        this->generateObjectTemplates =
             result["gen-object-templates"].as<bool>();
-        this->object_path = result["object"].as<std::string>();
-        this->z_distance = result["z-distance"].as<float>();
+        this->objectPath = result["object"].as<std::string>();
+        this->zDistance = result["z-distance"].as<float>();
     }
 
-    auto Arguments::get_device_path() const noexcept -> std::filesystem::path
+    auto Arguments::getDevicePath() const -> std::filesystem::path
     {
-        return this->device_path;
+
+        return this->devicePath.value();
     }
 
-    auto Arguments::get_generate_object_templates() const noexcept -> bool
+    auto Arguments::getGenerateObjectTemplates() const noexcept -> bool
     {
-        return this->generate_object_templates;
+        return this->generateObjectTemplates;
     }
 
-    auto Arguments::get_object_path() const noexcept -> std::filesystem::path
+    auto Arguments::getObjectPath() const noexcept -> std::filesystem::path
     {
-        return this->object_path;
+        return this->objectPath;
     }
 
-    auto Arguments::get_z_distance() const noexcept -> float
+    auto Arguments::useCVVideo() const noexcept -> bool
     {
-        return this->z_distance;
+        return this->videoSource == VideoSource::cv;
+    }
+
+    auto Arguments::useSHMVideo() const noexcept -> bool
+    {
+        return this->videoSource == VideoSource::shm;
+    }
+
+    auto Arguments::getZDistance() const noexcept -> float
+    {
+        return this->zDistance;
     }
 } // namespace fds
