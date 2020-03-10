@@ -36,13 +36,13 @@
 #ifndef POSE_ESTIMATOR6D_H
 #define POSE_ESTIMATOR6D_H
 
-#include <opencv2/core.hpp>
 #include <opencv2/calib3d.hpp>
+#include <opencv2/core.hpp>
 #include <opencv2/video.hpp>
 
 #include "object3d.h"
-#include "rendering_engine.h"
 #include "optimization_engine.h"
+#include "rendering_engine.h"
 #include "signed_distance_transform2d.h"
 #include "template_view.h"
 
@@ -54,7 +54,7 @@
  */
 class PoseEstimator6D
 {
-public:
+  public:
     /**
      *  Constructor of the pose estimator initializing rectification
      *  maps for image undistorting and the rendering engine, given
@@ -66,15 +66,23 @@ public:
      *  It also initializes the OpenGL rendering buffers for all
      *  provided 3D objects using the OpenGL context of the engine.
      *
-     *  @param  width The width in pixels of the camera frame at full resolution.
-     *  @param  height The height in pixels of the camera frame at full resolution.
+     *  @param  width The width in pixels of the camera frame at full
+     * resolution.
+     *  @param  height The height in pixels of the camera frame at full
+     * resolution.
      *  @param  zNear The distance of the OpenGL near plane.
      *  @param  zFar The distance of the OpenGL far plane.
      *  @param  K The intrinsic camera matrix.
      *  @param  distCoeffs The cameras lens distortion coefficients.
      *  @param  objects A collection of all 3D objects to be tracked.
      */
-    PoseEstimator6D(int width, int height, float zNear, float zFar, const cv::Matx33f &K, const cv::Matx14f &distCoeffs, std::vector<Object3D*> &objects);
+    PoseEstimator6D(int width,
+                    int height,
+                    float zNear,
+                    float zFar,
+                    const cv::Matx33f& K,
+                    const cv::Matx14f& distCoeffs,
+                    std::vector<Object3D*>& objects);
 
     ~PoseEstimator6D();
 
@@ -87,9 +95,11 @@ public:
      *
      *  @param  frame The current camera frame  (RGB, uchar).
      *  @param  objectIndex The index of the object to be initialized.
-     *  @param  undistortFrame A flag indicating whether the image should first be undistorted for initialization (default = true).
+     *  @param  undistortFrame A flag indicating whether the image should first
+     * be undistorted for initialization (default = true).
      */
-    void toggleTracking(cv::Mat &frame, int objectIndex, bool undistortFrame = true);
+    void
+    toggleTracking(cv::Mat& frame, int objectIndex, bool undistortFrame = true);
 
     /**
      *  This method tries to track and detect the 6DOF poses of all
@@ -104,10 +114,14 @@ public:
      *  on each object afterwards.
      *
      *  @param frame  The current camera frame (RGB, uchar).
-     *  @param undistortFrame A flag indicating whether the image should first be undistorted for initialization (default = true).
-     *  @param undistortFrame A flag indicating whether it should be checked for a tracking loss after pose estimation (default = true).
+     *  @param undistortFrame A flag indicating whether the image should first
+     * be undistorted for initialization (default = true).
+     *  @param undistortFrame A flag indicating whether it should be checked for
+     * a tracking loss after pose estimation (default = true).
      */
-    void estimatePoses(cv::Mat &frame, bool undistortFrame = true, bool checkForLoss = true);
+    void estimatePoses(cv::Mat& frame,
+                       bool undistortFrame = true,
+                       bool checkForLoss = true);
 
     /**
      *  Resets/stops pose tracking for all objects by clearing the
@@ -115,7 +129,7 @@ public:
      */
     void reset();
 
-private:
+  private:
     int width;
     int height;
 
@@ -127,7 +141,7 @@ private:
 
     std::vector<Object3D*> objects;
 
-    RenderingEngine *renderingEngine;
+    RenderingEngine* renderingEngine;
     OptimizationEngine optimizationEngine;
 
     SignedDistanceTransform2D SDT2D = SignedDistanceTransform2D{8.0f};
@@ -136,28 +150,54 @@ private:
 
     bool initialized;
 
-    void relocalize(Object3D *object, std::vector<cv::Mat> &imagePyramid);
+    void relocalize(Object3D* object, std::vector<cv::Mat>& imagePyramid);
 
-    cv::Rect computeBoundingBox(const std::vector<cv::Point3i> &centersIDs, int offset, int level, const cv::Size &maxSize);
+    cv::Rect computeBoundingBox(const std::vector<cv::Point3i>& centersIDs,
+                                int offset,
+                                int level,
+                                const cv::Size& maxSize);
 
-    float evaluateEnergyFunction(Object3D *object, const cv::Mat &binned, int level, int threads);
+    float evaluateEnergyFunction(Object3D* object,
+                                 const cv::Mat& binned,
+                                 int level,
+                                 int threads);
 
-    float evaluateEnergyFunction(Object3D *object, const cv::Mat &mask, const cv::Mat &depth, const cv::Mat &binned, int level, int threads);
+    float evaluateEnergyFunction(Object3D* object,
+                                 const cv::Mat& mask,
+                                 const cv::Mat& depth,
+                                 const cv::Mat& binned,
+                                 int level,
+                                 int threads);
 
-    float evaluateEnergyFunction(TCLCHistograms *tclcHistograms, const std::vector<cv::Point3i> &centersIDs, const cv::Mat &binned, const cv::Mat &heaviside, const cv::Rect &roi, int offsetX, int offsetY, int level, int threads);
+    float evaluateEnergyFunction(TCLCHistograms* tclcHistograms,
+                                 const std::vector<cv::Point3i>& centersIDs,
+                                 const cv::Mat& binned,
+                                 const cv::Mat& heaviside,
+                                 const cv::Rect& roi,
+                                 int offsetX,
+                                 int offsetY,
+                                 int level,
+                                 int threads);
 
-    float evaluateEnergyFunction_local(TCLCHistograms *tclcHistograms, const std::vector<cv::Point3i> &centersIDs, const cv::Mat &binned, const cv::Mat &heaviside, const cv::Rect &roi, int offsetX, int offsetY, int level);
-
+    float
+    evaluateEnergyFunction_local(TCLCHistograms* tclcHistograms,
+                                 const std::vector<cv::Point3i>& centersIDs,
+                                 const cv::Mat& binned,
+                                 const cv::Mat& heaviside,
+                                 const cv::Rect& roi,
+                                 int offsetX,
+                                 int offsetY,
+                                 int level);
 };
 
 /**
  *  This class extends the OpenCV ParallelLoopBody for efficiently parallelized
- *  computations. Within the corresponding for loop, the region-based cost function is
- *  evaluated given the current camera image for a single object.
+ *  computations. Within the corresponding for loop, the region-based cost
+ * function is evaluated given the current camera image for a single object.
  */
-class Parallel_For_evaluateEnergy: public cv::ParallelLoopBody
+class Parallel_For_evaluateEnergy : public cv::ParallelLoopBody
 {
-private:
+  private:
     int* binsData;
 
     cv::Mat localFG;
@@ -168,7 +208,7 @@ private:
 
     std::vector<cv::Point3i> _centersIDs;
 
-    uchar *initializedData;
+    uchar* initializedData;
 
     int numHistograms;
     int radius;
@@ -182,16 +222,25 @@ private:
     int _offsetX;
     int _offsetY;
 
-    float *hsData;
+    float* hsData;
 
     cv::Rect _roi;
 
-    float *_eCollection;
+    float* _eCollection;
 
     int _threads;
 
-public:
-    Parallel_For_evaluateEnergy(TCLCHistograms *tclcHistograms, const std::vector<cv::Point3i> &centersIDs, const cv::Mat &bins, const cv::Mat& heaviside, const cv::Rect &roi, int offsetX, int offsetY, int level, cv::Mat &eCollection, int threads)
+  public:
+    Parallel_For_evaluateEnergy(TCLCHistograms* tclcHistograms,
+                                const std::vector<cv::Point3i>& centersIDs,
+                                const cv::Mat& bins,
+                                const cv::Mat& heaviside,
+                                const cv::Rect& roi,
+                                int offsetX,
+                                int offsetY,
+                                int level,
+                                cv::Mat& eCollection,
+                                int threads)
     {
         binsData = (int*)bins.ptr<int>();
 
@@ -211,7 +260,7 @@ public:
 
         radius = tclcHistograms->getRadius();
 
-        radius2 = radius*radius;
+        radius2 = radius * radius;
 
         fullWidth = bins.cols;
         fullHeight = bins.rows;
@@ -228,31 +277,31 @@ public:
         _threads = threads;
     }
 
-
-    virtual void operator()( const cv::Range &r ) const
+    virtual void operator()(const cv::Range& r) const
     {
-        int range = _roi.height/_threads;
+        int range = _roi.height / _threads;
 
-        int jEnd = r.end*range;
-        if(r.end == _threads)
+        int jEnd = r.end * range;
+        if (r.end == _threads)
         {
             jEnd = _roi.height;
         }
 
-        float *e = _eCollection + 3*r.start;
+        float* e = _eCollection + 3 * r.start;
 
-        for(int j = r.start*range; j < jEnd; j++)
+        for (int j = r.start * range; j < jEnd; j++)
         {
-            int idx = j*_roi.width;
+            int idx = j * _roi.width;
 
-            for(int i = 0; i < _roi.width; i++, idx++)
+            for (int i = 0; i < _roi.width; i++, idx++)
             {
                 float hsVal = hsData[idx];
 
-                int px = i+_offsetX;
-                int py = j+_offsetY;
+                int px = i + _offsetX;
+                int py = j + _offsetY;
 
-                if(hsVal >= 0.0f && py >= 0 && py < fullHeight && px >= 0 && px < fullWidth)
+                if (hsVal >= 0.0f && py >= 0 && py < fullHeight && px >= 0 &&
+                    px < fullWidth)
                 {
                     int pIdx = py * fullWidth + px;
 
@@ -265,21 +314,23 @@ public:
 
                     int cnt = 0;
 
-                    for(int h = 0; h < numHistograms; h++)
+                    for (int h = 0; h < numHistograms; h++)
                     {
                         cv::Point3i centerID = _centersIDs[h];
 
-                        if(initializedData[centerID.z])
+                        if (initializedData[centerID.z])
                         {
-                            int dx = centerID.x - scale*(i+_roi.x + 0.5f);
-                            int dy = centerID.y - scale*(j+_roi.y + 0.5f);
+                            int dx = centerID.x - scale * (i + _roi.x + 0.5f);
+                            int dy = centerID.y - scale * (j + _roi.y + 0.5f);
 
-                            int distance = dx*dx + dy*dy;
+                            int distance = dx * dx + dy * dy;
 
-                            if(distance <= radius2)
+                            if (distance <= radius2)
                             {
-                                float pyf = localFG.at<float>(centerID.z, binIdx);
-                                float pyb = localBG.at<float>(centerID.z, binIdx);
+                                float pyf =
+                                    localFG.at<float>(centerID.z, binIdx);
+                                float pyb =
+                                    localBG.at<float>(centerID.z, binIdx);
 
                                 pyf += 0.0000001f;
                                 pyb += 0.0000001f;
@@ -291,7 +342,7 @@ public:
                         }
                     }
 
-                    if(cnt > 1)
+                    if (cnt > 1)
                     {
                         pYFVal /= cnt;
                         pYBVal = 1.0f - pYFVal;
@@ -311,14 +362,14 @@ public:
  *  of a color input image are converted to their corresponding histogram bin
  *  index.
  */
-class Parallel_For_convertToBins: public cv::ParallelLoopBody
+class Parallel_For_convertToBins : public cv::ParallelLoopBody
 {
-private:
+  private:
     cv::Mat _frame;
     cv::Mat _binned;
 
-    uchar *frameData;
-    int *binnedData;
+    uchar* frameData;
+    int* binnedData;
 
     int _numBins;
 
@@ -326,8 +377,11 @@ private:
 
     int _threads;
 
-public:
-    Parallel_For_convertToBins(const cv::Mat &frame, cv::Mat &binned, int numBins, int threads)
+  public:
+    Parallel_For_convertToBins(const cv::Mat& frame,
+                               cv::Mat& binned,
+                               int numBins,
+                               int threads)
     {
         _frame = frame;
 
@@ -339,28 +393,28 @@ public:
 
         _numBins = numBins;
 
-        _binShift = 8 - log(numBins)/log(2);
+        _binShift = 8 - log(numBins) / log(2);
 
         _threads = threads;
     }
 
-    virtual void operator()( const cv::Range &r ) const
+    virtual void operator()(const cv::Range& r) const
     {
-        int range = _frame.rows/_threads;
+        int range = _frame.rows / _threads;
 
-        int yEnd = r.end*range;
-        if(r.end == _threads)
+        int yEnd = r.end * range;
+        if (r.end == _threads)
         {
             yEnd = _frame.rows;
         }
 
-        for(int y = r.start*range; y < yEnd; y++)
+        for (int y = r.start * range; y < yEnd; y++)
         {
-            uchar *frameRow = frameData + y*_frame.cols*3;
-            int *binnedRow = binnedData + y*_binned.cols;
+            uchar* frameRow = frameData + y * _frame.cols * 3;
+            int* binnedRow = binnedData + y * _binned.cols;
 
             int idx = 0;
-            for(int x = 0; x < _frame.cols; x++, idx+=3)
+            for (int x = 0; x < _frame.cols; x++, idx += 3)
             {
                 int ru = (frameRow[idx] >> _binShift);
                 int gu = (frameRow[idx + 1] >> _binShift);
@@ -383,13 +437,13 @@ public:
  *  is greater than the background probability, the value of the pixel in the
  *  resulting posterior response map is set to 255 and 0 otherwise.
  */
-class Parallel_For_createPosteriorResponseMap: public cv::ParallelLoopBody
+class Parallel_For_createPosteriorResponseMap : public cv::ParallelLoopBody
 {
-private:
+  private:
     cv::Mat localFG;
     cv::Mat localBG;
 
-    uchar *initializedData;
+    uchar* initializedData;
 
     int numHistograms;
     int numBins;
@@ -397,13 +451,16 @@ private:
     cv::Mat _binned;
     cv::Mat _map;
 
-    int *binnedData;
-    uchar *mapData;
+    int* binnedData;
+    uchar* mapData;
 
     int _threads;
 
-public:
-    Parallel_For_createPosteriorResponseMap(TCLCHistograms *tclcHistograms, const cv::Mat &binned, cv::Mat &map, int threads)
+  public:
+    Parallel_For_createPosteriorResponseMap(TCLCHistograms* tclcHistograms,
+                                            const cv::Mat& binned,
+                                            cv::Mat& map,
+                                            int threads)
     {
         localFG = tclcHistograms->getLocalForegroundHistograms();
         localBG = tclcHistograms->getLocalBackgroundHistograms();
@@ -425,32 +482,32 @@ public:
         _threads = threads;
     }
 
-    virtual void operator()(const cv::Range &r) const
+    virtual void operator()(const cv::Range& r) const
     {
-        int range = _binned.rows/_threads;
+        int range = _binned.rows / _threads;
 
-        int yEnd = r.end*range;
-        if(r.end == _threads)
+        int yEnd = r.end * range;
+        if (r.end == _threads)
         {
             yEnd = _binned.rows;
         }
 
-        char *LUT = new char[numBins*numBins*numBins]();
+        char* LUT = new char[numBins * numBins * numBins]();
 
-        for(int y = r.start*range; y < yEnd; y++)
+        for (int y = r.start * range; y < yEnd; y++)
         {
-            int *binnedRow = binnedData + y*_binned.cols;
-            uchar *mapRow = mapData + y*_map.cols;
+            int* binnedRow = binnedData + y * _binned.cols;
+            uchar* mapRow = mapData + y * _map.cols;
 
-            for(int x = 0; x < _binned.cols; x++)
+            for (int x = 0; x < _binned.cols; x++)
             {
                 int binIdx = binnedRow[x];
 
                 char resLUT = LUT[binIdx];
 
-                if(resLUT)
+                if (resLUT)
                 {
-                    if(resLUT == 2)
+                    if (resLUT == 2)
                     {
                         mapRow[x] = 255;
                     }
@@ -466,14 +523,14 @@ public:
 
                     int cnt = 0;
 
-                    for(int h = 0; h < numHistograms; h++)
+                    for (int h = 0; h < numHistograms; h++)
                     {
-                        if(initializedData[h])
+                        if (initializedData[h])
                         {
                             float pyf = localFG.at<float>(h, binIdx);
                             float pyb = localBG.at<float>(h, binIdx);
 
-                            if(pyf > 0.0f || pyb > 0.0f)
+                            if (pyf > 0.0f || pyb > 0.0f)
                             {
                                 pyf += 0.0000001f;
                                 pyb += 0.0000001f;
@@ -485,7 +542,7 @@ public:
                         }
                     }
 
-                    if(cnt)
+                    if (cnt)
                     {
                         pYFVal /= cnt;
                         pYBVal /= cnt;
@@ -493,7 +550,7 @@ public:
 
                     bool isFG = pYFVal > pYBVal;
 
-                    if(isFG)
+                    if (isFG)
                     {
                         mapRow[x] = 255;
                         LUT[binIdx] = 2;
@@ -517,47 +574,52 @@ public:
  *  efficient method for cost function evaluation based on a compressed template
  *  representation.
  */
-class Parallel_For_templateMatcher: public cv::ParallelLoopBody
+class Parallel_For_templateMatcher : public cv::ParallelLoopBody
 {
-public:
-
-    float evaluateEnergyFunction(TCLCHistograms *tclcHistograms, const std::vector<PixelData> &compressedPixelData, const cv::Mat &binned, const cv::Rect &roi, int offsetX, int offsetY) const
+  public:
+    float
+    evaluateEnergyFunction(TCLCHistograms* tclcHistograms,
+                           const std::vector<PixelData>& compressedPixelData,
+                           const cv::Mat& binned,
+                           const cv::Rect& roi,
+                           int offsetX,
+                           int offsetY) const
     {
         float e = 0.0f;
         int sum = 0;
 
-        int *binsData = (int*)binned.ptr<int>();
+        int* binsData = (int*)binned.ptr<int>();
 
         cv::Mat localFG = tclcHistograms->getLocalForegroundHistograms();
         cv::Mat localBG = tclcHistograms->getLocalBackgroundHistograms();
 
-        uchar *initializedData = tclcHistograms->getInitialized().data;
+        uchar* initializedData = tclcHistograms->getInitialized().data;
 
         int fullWidth = binned.cols;
         int fullHeight = binned.rows;
 
-        for(int p = 0; p < compressedPixelData.size(); p++)
+        for (int p = 0; p < compressedPixelData.size(); p++)
         {
             PixelData pixelData = compressedPixelData[p];
 
             float hsVal = pixelData.hsVal;
 
-            int px = pixelData.x+offsetX;
-            int py = pixelData.y+offsetY;
+            int px = pixelData.x + offsetX;
+            int py = pixelData.y + offsetY;
 
-            if(py >= 0 && py < fullHeight && px >= 0 && px < fullWidth)
+            if (py >= 0 && py < fullHeight && px >= 0 && px < fullWidth)
             {
-                int pIdx = py*fullWidth + px;
+                int pIdx = py * fullWidth + px;
                 int binIdx = binsData[pIdx];
 
                 float pYFVal = 0;
                 float pYBVal = 0;
 
                 int cnt = 0;
-                for(int i = 0; i < pixelData.ids_size; i++)
+                for (int i = 0; i < pixelData.ids_size; i++)
                 {
                     int hID = pixelData.ids[i];
-                    if(initializedData[hID])
+                    if (initializedData[hID])
                     {
                         float pyf = localFG.at<float>(hID, binIdx);
                         float pyb = localBG.at<float>(hID, binIdx);
@@ -572,7 +634,7 @@ public:
                     }
                 }
 
-                if(cnt > 1)
+                if (cnt > 1)
                 {
                     pYFVal /= cnt;
                     pYBVal /= cnt;
@@ -584,27 +646,26 @@ public:
             }
         }
 
-        if(sum && (float)sum/compressedPixelData.size() > 0.5f)
+        if (sum && (float)sum / compressedPixelData.size() > 0.5f)
             e /= sum;
         else
             e = FLT_MAX;
 
         return e;
     }
-
 };
 
 /**
  *  This class extends the OpenCV ParallelLoopBody for efficiently parallelized
  *  computations. Within the corresponding for loop, tempalte matching for all
- *  base templates across the whole image is performed in a sliding window manner.
- *  This is accelerated by using a posterior response map to quickly detect regions
- *  where the cost functioin must not be evaluated.
+ *  base templates across the whole image is performed in a sliding window
+ * manner. This is accelerated by using a posterior response map to quickly
+ * detect regions where the cost functioin must not be evaluated.
  */
-class Parallel_For_exhaustiveSearch: public Parallel_For_templateMatcher
+class Parallel_For_exhaustiveSearch : public Parallel_For_templateMatcher
 {
-private:
-    Object3D *object;
+  private:
+    Object3D* object;
     std::vector<TemplateView*> templateViews;
 
     cv::Mat binned;
@@ -614,8 +675,14 @@ private:
     int step;
     int diameter;
 
-public:
-    Parallel_For_exhaustiveSearch(Object3D *object, std::vector<TemplateView*> &templateViews, const cv::Mat &binned, const cv::Mat &prMap, int level, int step, int diameter)
+  public:
+    Parallel_For_exhaustiveSearch(Object3D* object,
+                                  std::vector<TemplateView*>& templateViews,
+                                  const cv::Mat& binned,
+                                  const cv::Mat& prMap,
+                                  int level,
+                                  int step,
+                                  int diameter)
     {
         this->object = object;
         this->templateViews = templateViews;
@@ -628,32 +695,37 @@ public:
         this->diameter = diameter;
     }
 
-    float computeMapMaskMatch(const cv::Mat &map, const cv::Mat &mask, int etaF, int offsetX, int offsetY, int innerOffset) const
+    float computeMapMaskMatch(const cv::Mat& map,
+                              const cv::Mat& mask,
+                              int etaF,
+                              int offsetX,
+                              int offsetY,
+                              int innerOffset) const
     {
         float score = 0.0f;
 
-        uchar *mapData = map.data;
-        uchar *maskData = mask.data;
+        uchar* mapData = map.data;
+        uchar* maskData = mask.data;
 
         int fullWidth = map.cols;
         int fullHeight = map.rows;
 
         int cnt = 0;
 
-        for(int j = innerOffset; j < mask.rows - innerOffset; j++)
+        for (int j = innerOffset; j < mask.rows - innerOffset; j++)
         {
-            int idx = j*mask.cols + innerOffset;
+            int idx = j * mask.cols + innerOffset;
 
-            for(int i = innerOffset; i < mask.cols - innerOffset; i++, idx++)
+            for (int i = innerOffset; i < mask.cols - innerOffset; i++, idx++)
             {
-                int px = i+offsetX;
-                int py = j+offsetY;
+                int px = i + offsetX;
+                int py = j + offsetY;
 
-                if(py >= 0 && py < fullHeight && px >= 0 && px < fullWidth)
+                if (py >= 0 && py < fullHeight && px >= 0 && px < fullWidth)
                 {
                     int pIdx = py * fullWidth + px;
 
-                    if(maskData[idx] && mapData[pIdx])
+                    if (maskData[idx] && mapData[pIdx])
                     {
                         cnt++;
                     }
@@ -661,20 +733,20 @@ public:
             }
         }
 
-        score = (float)cnt/etaF;
+        score = (float)cnt / etaF;
 
         return score;
     }
 
-    virtual void operator()( const cv::Range &r ) const
+    virtual void operator()(const cv::Range& r) const
     {
-        for(int t = r.start; t < r.end; t++)
+        for (int t = r.start; t < r.end; t++)
         {
-            TCLCHistograms *tclcHistograms = object->getTCLCHistograms();
+            TCLCHistograms* tclcHistograms = object->getTCLCHistograms();
 
-            int innerOffset = tclcHistograms->getRadius()/pow(2, level);
+            int innerOffset = tclcHistograms->getRadius() / pow(2, level);
 
-            TemplateView *tv = templateViews[t];
+            TemplateView* tv = templateViews[t];
             cv::Rect roi = tv->getROI(level);
             cv::Mat heaviside = tv->getHeaviside(level);
             std::vector<cv::Point3i> centersIDs = tv->getCentersAndIDs(level);
@@ -682,52 +754,65 @@ public:
             cv::Mat mask = tv->getMask(level);
             int etaF = tv->getEtaF(level);
 
-            std::vector<PixelData> compressedPixelData = tv->getCompressedPixelData(level);
+            std::vector<PixelData> compressedPixelData =
+                tv->getCompressedPixelData(level);
 
             int xStart, xEnd, yStart, yEnd;
 
-            if(diameter <= 0)
+            if (diameter <= 0)
             {
-                xStart = 0;;
+                xStart = 0;
+                ;
                 xEnd = binned.cols - roi.width;
-                yStart = 0;;
+                yStart = 0;
+                ;
                 yEnd = binned.rows - roi.height;
             }
             else
             {
                 cv::Point3f offset = tv->getCurrentOffset(level);
                 xStart = offset.x - diameter;
-                xEnd = offset.x + diameter+1;
+                xEnd = offset.x + diameter + 1;
                 yStart = offset.y - diameter;
-                yEnd = offset.y + diameter+1;
+                yEnd = offset.y + diameter + 1;
             }
 
             float minE = FLT_MAX;
             int finalX = 0;
             int finalY = 0;
 
-
             int initCnt = 0;
-            for(int i = 0; i < centersIDs.size(); i++)
+            for (int i = 0; i < centersIDs.size(); i++)
             {
-                if(tclcHistograms->getInitialized().data[centersIDs[i].z])
+                if (tclcHistograms->getInitialized().data[centersIDs[i].z])
                     initCnt++;
             }
 
-            if((float)initCnt/centersIDs.size() > 0.5f)
+            if ((float)initCnt / centersIDs.size() > 0.5f)
             {
                 std::vector<cv::Point2i> offsets;
-                for(int offsetY = yStart; offsetY < yEnd; offsetY+=step)
+                for (int offsetY = yStart; offsetY < yEnd; offsetY += step)
                 {
-                    for(int offsetX = xStart; offsetX < xEnd; offsetX+=step)
+                    for (int offsetX = xStart; offsetX < xEnd; offsetX += step)
                     {
-                        if(computeMapMaskMatch(prMap, mask, etaF, offsetX, offsetY, innerOffset) > 0.5f)
+                        if (computeMapMaskMatch(prMap,
+                                                mask,
+                                                etaF,
+                                                offsetX,
+                                                offsetY,
+                                                innerOffset) > 0.5f)
                         {
                             offsets.push_back(cv::Point2i(offsetX, offsetY));
 
-                            float e = evaluateEnergyFunction(tclcHistograms, compressedPixelData, binned, roi, offsetX, offsetY);
+                            float e =
+                                evaluateEnergyFunction(tclcHistograms,
+                                                       compressedPixelData,
+                                                       binned,
+                                                       roi,
+                                                       offsetX,
+                                                       offsetY);
 
-                            if(e < minE)
+                            if (e < minE)
                             {
                                 minE = e;
                                 finalX = offsetX;
@@ -746,16 +831,16 @@ public:
 
 /**
  *  This class extends the OpenCV ParallelLoopBody for efficiently parallelized
- *  computations. Within the corresponding for loop, template matching is performed
- *  for all neighboring templates corresponding to one base template at the 2D location
- *  where this base template matched best at the lower image pyramid level during the
- *  previous exhaustive search.
+ *  computations. Within the corresponding for loop, template matching is
+ * performed for all neighboring templates corresponding to one base template at
+ * the 2D location where this base template matched best at the lower image
+ * pyramid level during the previous exhaustive search.
  */
-class Parallel_For_neighborSearch: public Parallel_For_templateMatcher
+class Parallel_For_neighborSearch : public Parallel_For_templateMatcher
 {
-private:
-    Object3D *object;
-    TemplateView *templateView;
+  private:
+    Object3D* object;
+    TemplateView* templateView;
     std::vector<TemplateView*> neighbors;
 
     cv::Mat binned;
@@ -769,8 +854,12 @@ private:
     int level;
     int levelDiff;
 
-public:
-    Parallel_For_neighborSearch(Object3D *object, TemplateView *templateView, const cv::Mat &binned, int level, int levelDiff)
+  public:
+    Parallel_For_neighborSearch(Object3D* object,
+                                TemplateView* templateView,
+                                const cv::Mat& binned,
+                                int level,
+                                int levelDiff)
     {
         this->object = object;
         this->templateView = templateView;
@@ -781,37 +870,43 @@ public:
         cv::Point3f offset0 = templateView->getCurrentOffset(level);
         cv::Rect roi0 = templateView->getROI(level);
 
-        this->offsetX0 = offset0.x*pow(2, levelDiff);
-        this->offsetY0 = offset0.y*pow(2, levelDiff);
+        this->offsetX0 = offset0.x * pow(2, levelDiff);
+        this->offsetY0 = offset0.y * pow(2, levelDiff);
 
-        this->centerX0 = roi0.x + roi0.width/2;
-        this->centerY0 = roi0.y + roi0.height/2;
+        this->centerX0 = roi0.x + roi0.width / 2;
+        this->centerY0 = roi0.y + roi0.height / 2;
 
         this->level = level;
         this->levelDiff = levelDiff;
     }
 
-
-    virtual void operator()( const cv::Range &r ) const
+    virtual void operator()(const cv::Range& r) const
     {
-        for(int t = r.start; t < r.end; t++)
+        for (int t = r.start; t < r.end; t++)
         {
-            TCLCHistograms *tclcHistograms = object->getTCLCHistograms();
+            TCLCHistograms* tclcHistograms = object->getTCLCHistograms();
 
-            TemplateView *neighbor = neighbors[t];
+            TemplateView* neighbor = neighbors[t];
             cv::Rect roi = neighbor->getROI(level);
             cv::Mat heaviside = neighbor->getHeaviside(level);
-            std::vector<cv::Point3i> centersIDs = neighbor->getCentersAndIDs(level);
+            std::vector<cv::Point3i> centersIDs =
+                neighbor->getCentersAndIDs(level);
 
-            std::vector<PixelData> compressedPixelData = neighbor->getCompressedPixelData(level);
+            std::vector<PixelData> compressedPixelData =
+                neighbor->getCompressedPixelData(level);
 
-            int centerX = roi.x + roi.width/2;
-            int centerY = roi.y + roi.height/2;
+            int centerX = roi.x + roi.width / 2;
+            int centerY = roi.y + roi.height / 2;
 
             int offsetX = offsetX0 + (centerX0 - centerX);
             int offsetY = offsetY0 + (centerY0 - centerY);
 
-            float e = evaluateEnergyFunction(tclcHistograms, compressedPixelData, binned, roi, offsetX, offsetY);
+            float e = evaluateEnergyFunction(tclcHistograms,
+                                             compressedPixelData,
+                                             binned,
+                                             roi,
+                                             offsetX,
+                                             offsetY);
 
             cv::Point3f offset(offsetX, offsetY, e);
 
@@ -820,5 +915,4 @@ public:
     }
 };
 
-
-#endif //POSE_ESTIMATOR6D_H
+#endif // POSE_ESTIMATOR6D_H
