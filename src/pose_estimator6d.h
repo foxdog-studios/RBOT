@@ -136,8 +136,6 @@ private:
 
     bool initialized;
 
-    int tmp;
-
     void relocalize(Object3D *object, std::vector<cv::Mat> &imagePyramid);
 
     cv::Rect computeBoundingBox(const std::vector<cv::Point3i> &centersIDs, int offset, int level, const cv::Size &maxSize);

@@ -51,15 +51,10 @@ PoseEstimator6D::PoseEstimator6D(int width,
                                  const cv::Matx33f& K,
                                  const cv::Matx14f& distCoeffs,
                                  vector<Object3D*>& objects)
-    : optimizationEngine{width, height}
+    : width{width}, height{height}, K{K}, distCoeffs{distCoeffs},
+      optimizationEngine{width, height}
 {
     renderingEngine = RenderingEngine::Instance();
-
-    this->width = width;
-    this->height = height;
-
-    this->K = K;
-    this->distCoeffs = distCoeffs;
 
     initUndistortRectifyMap(K,
                             distCoeffs,
@@ -71,10 +66,7 @@ PoseEstimator6D::PoseEstimator6D(int width,
                             map2);
 
     initialized = false;
-
-    // start initialization
     renderingEngine->init(K, width, height, zNear, zFar, 4);
-
     renderingEngine->makeCurrent();
 
     for (int i = 0; i < objects.size(); i++)
@@ -87,8 +79,6 @@ PoseEstimator6D::PoseEstimator6D(int width,
     }
 
     renderingEngine->doneCurrent();
-
-    tmp = 0;
 }
 
 PoseEstimator6D::~PoseEstimator6D()
