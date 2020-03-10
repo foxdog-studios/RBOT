@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     // FDS hard coded
-    auto const device_path = "/dev/c920-1";
+    auto const device_path = argv[1];
     auto const width = 640;
     auto const height = 480;
 
@@ -134,10 +134,10 @@ int main(int argc, char *argv[])
     // distances for the pose detection template generation
     /* vector<float> distances = {400.0f, 800.0f, 1200.0f}; */
     // FDS
-    vector<float> distances = {300.0f, 500.0f, 700.0f};
+    vector<float> distances = {300.0f};
     // load 3D objects
     vector<Object3D*> objects;
-    objects.push_back(new Object3D(argv[1], 15, -45, std::stof(argv[2]), 115, 0, 45, 1.0, 0.55f, distances));
+    objects.push_back(new Object3D(argv[2], 15, -45, std::stof(argv[3]), 115, 0, 45, 1.0, 0.55f, distances));
     //objects.push_back(new Object3D("data/a_second_model.obj", -50, 0, 600, 30, 0, 180, 1.0, 0.55f, distances2));
 
     // create the pose estimator
