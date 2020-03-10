@@ -37,8 +37,8 @@
 #define OBJECT3D_H
 
 #include "model.h"
+#include "tclc_histograms.h"
 
-class TCLCHistograms;
 class TemplateView;
 
 /**
@@ -122,7 +122,7 @@ class Object3D : public Model
      *
      *  @return  The set of tclc-histograms associated with this object.
      */
-    TCLCHistograms* getTCLCHistograms();
+    auto getTCLCHistograms() noexcept -> TCLCHistograms&;
 
     /**
      *  Generates all base and neighboring templates required for
@@ -168,7 +168,7 @@ class Object3D : public Model
     std::vector<cv::Vec3f> baseIcosahedron;
     std::vector<cv::Vec3f> subdivIcosahedron;
 
-    TCLCHistograms* tclcHistograms;
+    TCLCHistograms tclcHistograms;
 
     std::vector<TemplateView*> baseTemplates;
     std::vector<TemplateView*> neighboringTemplates;

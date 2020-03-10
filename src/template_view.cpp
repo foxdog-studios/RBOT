@@ -67,7 +67,7 @@ TemplateView::TemplateView(Object3D* object,
     float zNear = renderingEngine->getZNear();
     float zFar = renderingEngine->getZFar();
 
-    TCLCHistograms* tclcHistograms = object->getTCLCHistograms();
+    auto& tclcHistograms = object->getTCLCHistograms();
 
     int m_id = object->getModelID();
 
@@ -95,15 +95,14 @@ TemplateView::TemplateView(Object3D* object,
     {
         int scale = pow(2, level);
 
-        tclcHistograms->updateCentersAndIds(
+        tclcHistograms.updateCentersAndIds(
             mask0 / 255 * m_id, depth0, K, zNear, zFar, 0);
 
-        std::vector<cv::Point3i> centersIDs =
-            tclcHistograms->getCentersAndIDs();
+        std::vector<cv::Point3i> centersIDs = tclcHistograms.getCentersAndIDs();
 
         centersIDsPyramid[level] = centersIDs;
 
-        int offset = tclcHistograms->getRadius() / pow(2, level);
+        int offset = tclcHistograms.getRadius() / pow(2, level);
 
         Rect roi = computeBoundingBox(
             centersIDs,
@@ -136,7 +135,7 @@ TemplateView::TemplateView(Object3D* object,
         heavisidePyramid[level] = heaviside;
 
         compressTemplateData(
-            centersIDs, heaviside, roi, tclcHistograms->getRadius(), level);
+            centersIDs, heaviside, roi, tclcHistograms.getRadius(), level);
     }
 }
 

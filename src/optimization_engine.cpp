@@ -218,7 +218,7 @@ void OptimizationEngine::parallel_computeJacobians(Object3D* object,
     vector<Matx66f> wJTJCollection(threads);
 
     parallel_for_(cv::Range(0, threads),
-                  Parallel_For_computeJacobiansGN(object->getTCLCHistograms(),
+                  Parallel_For_computeJacobiansGN(&object->getTCLCHistograms(),
                                                   frame,
                                                   sdt,
                                                   xyPos,

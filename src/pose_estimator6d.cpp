@@ -115,7 +115,7 @@ void PoseEstimator6D::toggleTracking(cv::Mat& frame,
         float zNear = renderingEngine->getZNear();
         float zFar = renderingEngine->getZFar();
 
-        objects[objectIndex]->getTCLCHistograms()->update(
+        objects[objectIndex]->getTCLCHistograms().update(
             frame, mask, depth, K, zNear, zFar);
 
         initialized = true;
@@ -172,7 +172,7 @@ void PoseEstimator6D::estimatePoses(cv::Mat& frame,
                       Parallel_For_convertToBins(
                           frame,
                           binned,
-                          objects[0]->getTCLCHistograms()->getNumBins(),
+                          objects[0]->getTCLCHistograms().getNumBins(),
                           8));
 
         for (int i = 0; i < objects.size(); i++)
@@ -192,7 +192,7 @@ void PoseEstimator6D::estimatePoses(cv::Mat& frame,
                     }
                     else
                     {
-                        objects[i]->getTCLCHistograms()->update(
+                        objects[i]->getTCLCHistograms().update(
                             frame, mask, depth, K, zNear, zFar);
                     }
                 }
@@ -219,13 +219,13 @@ void PoseEstimator6D::relocalize(Object3D* object, vector<Mat>& imagePyramid)
         cv::Range(0, 8),
         Parallel_For_convertToBins(imagePyramid[level],
                                    binned,
-                                   object->getTCLCHistograms()->getNumBins(),
+                                   object->getTCLCHistograms().getNumBins(),
                                    8));
 
     Mat prMap;
     parallel_for_(cv::Range(0, 8),
                   Parallel_For_createPosteriorResponseMap(
-                      object->getTCLCHistograms(), binned, prMap, 8));
+                      &object->getTCLCHistograms(), binned, prMap, 8));
 
     parallel_for_(cv::Range(0, (int)templateViews.size()),
                   Parallel_For_exhaustiveSearch(
@@ -269,7 +269,7 @@ void PoseEstimator6D::relocalize(Object3D* object, vector<Mat>& imagePyramid)
         cv::Range(0, 8),
         Parallel_For_convertToBins(imagePyramid[level],
                                    binned,
-                                   object->getTCLCHistograms()->getNumBins(),
+                                   object->getTCLCHistograms().getNumBins(),
                                    8));
 
     vector<pair<float, TemplateView*>> errorKVMap;
@@ -305,7 +305,7 @@ void PoseEstimator6D::relocalize(Object3D* object, vector<Mat>& imagePyramid)
         cv::Range(0, 8),
         Parallel_For_convertToBins(imagePyramid[0],
                                    binned,
-                                   object->getTCLCHistograms()->getNumBins(),
+                                   object->getTCLCHistograms().getNumBins(),
                                    8));
 
     float minE = FLT_MAX;
@@ -351,7 +351,7 @@ void PoseEstimator6D::relocalize(Object3D* object, vector<Mat>& imagePyramid)
             float zNear = renderingEngine->getZNear();
             float zFar = renderingEngine->getZFar();
 
-            object->getTCLCHistograms()->updateCentersAndIds(
+            object->getTCLCHistograms().updateCentersAndIds(
                 mask, depth, K, zNear, zFar, 0);
 
             vector<Object3D*> tmp;
@@ -374,6 +374,7 @@ void PoseEstimator6D::relocalize(Object3D* object, vector<Mat>& imagePyramid)
             }
         }
     }
+
     if (!trackingLost)
     {
         object->setPose(finalPose);
@@ -389,7 +390,7 @@ void PoseEstimator6D::relocalize(Object3D* object, vector<Mat>& imagePyramid)
         float zNear = renderingEngine->getZNear();
         float zFar = renderingEngine->getZFar();
 
-        object->getTCLCHistograms()->updateCentersAndIds(
+        object->getTCLCHistograms().updateCentersAndIds(
             mask, depth, K, zNear, zFar, 0);
     }
     else
@@ -465,15 +466,15 @@ float PoseEstimator6D::evaluateEnergyFunction(Object3D* object,
     float zNear = renderingEngine->getZNear();
     float zFar = renderingEngine->getZFar();
 
-    TCLCHistograms* tclcHistograms = object->getTCLCHistograms();
-    tclcHistograms->updateCentersAndIds(mask, depth, K, zNear, zFar, 0);
+    auto& tclcHistograms = object->getTCLCHistograms();
+    tclcHistograms.updateCentersAndIds(mask, depth, K, zNear, zFar, 0);
 
-    vector<Point3i> centersIDs = tclcHistograms->getCentersAndIDs();
+    vector<Point3i> centersIDs = tclcHistograms.getCentersAndIDs();
 
     if (centersIDs.size() > 0)
     {
         Rect roi = computeBoundingBox(
-            centersIDs, tclcHistograms->getRadius(), 0, binned.size());
+            centersIDs, tclcHistograms.getRadius(), 0, binned.size());
 
         Mat croppedMask = mask(roi).clone();
         Mat croppedDepth = depth(roi).clone();
@@ -486,7 +487,7 @@ float PoseEstimator6D::evaluateEnergyFunction(Object3D* object,
         parallel_for_(cv::Range(0, 8),
                       Parallel_For_convertToHeaviside(sdt, heaviside, 8));
 
-        return evaluateEnergyFunction(tclcHistograms,
+        return evaluateEnergyFunction(&tclcHistograms,
                                       centersIDs,
                                       binned,
                                       heaviside,

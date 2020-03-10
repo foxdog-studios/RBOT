@@ -55,7 +55,8 @@ Object3D::Object3D(const string objFilename,
                    float scale,
                    float qualityThreshold,
                    vector<float>& templateDistances)
-    : Model(objFilename, tx, ty, tz, alpha, beta, gamma, scale)
+    : Model{objFilename, tx, ty, tz, alpha, beta, gamma, scale},
+      tclcHistograms{this, 32, 40, 10.0f}
 {
     this->trackingLost = false;
 
@@ -64,8 +65,6 @@ Object3D::Object3D(const string objFilename,
     this->templateDistances = templateDistances;
 
     this->numDistances = (int)templateDistances.size();
-
-    this->tclcHistograms = new TCLCHistograms(this, 32, 40, 10.0f);
 
     // icosahedron geometry for generating the base templates
     baseIcosahedron.push_back(Vec3f(0, 1, 1.61803));
@@ -128,8 +127,6 @@ Object3D::Object3D(const string objFilename,
 
 Object3D::~Object3D()
 {
-    delete tclcHistograms;
-
     for (int i = 0; i < baseTemplates.size(); i++)
     {
         delete baseTemplates[i];
@@ -158,7 +155,7 @@ float Object3D::getQualityThreshold()
     return qualityThreshold;
 }
 
-TCLCHistograms* Object3D::getTCLCHistograms()
+auto Object3D::getTCLCHistograms() noexcept -> TCLCHistograms&
 {
     return tclcHistograms;
 }
@@ -291,7 +288,7 @@ void Object3D::reset()
 {
     Model::reset();
 
-    tclcHistograms->clear();
+    tclcHistograms.clear();
 
     trackingLost = false;
 }

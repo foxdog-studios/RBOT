@@ -743,9 +743,9 @@ class Parallel_For_exhaustiveSearch : public Parallel_For_templateMatcher
     {
         for (int t = r.start; t < r.end; t++)
         {
-            TCLCHistograms* tclcHistograms = object->getTCLCHistograms();
+            auto& tclcHistograms = object->getTCLCHistograms();
 
-            int innerOffset = tclcHistograms->getRadius() / pow(2, level);
+            int innerOffset = tclcHistograms.getRadius() / pow(2, level);
 
             TemplateView* tv = templateViews[t];
             cv::Rect roi = tv->getROI(level);
@@ -785,7 +785,7 @@ class Parallel_For_exhaustiveSearch : public Parallel_For_templateMatcher
             int initCnt = 0;
             for (int i = 0; i < centersIDs.size(); i++)
             {
-                if (tclcHistograms->getInitialized().data[centersIDs[i].z])
+                if (tclcHistograms.getInitialized().data[centersIDs[i].z])
                     initCnt++;
             }
 
@@ -806,7 +806,7 @@ class Parallel_For_exhaustiveSearch : public Parallel_For_templateMatcher
                             offsets.push_back(cv::Point2i(offsetX, offsetY));
 
                             float e =
-                                evaluateEnergyFunction(tclcHistograms,
+                                evaluateEnergyFunction(&tclcHistograms,
                                                        compressedPixelData,
                                                        binned,
                                                        roi,
@@ -885,7 +885,7 @@ class Parallel_For_neighborSearch : public Parallel_For_templateMatcher
     {
         for (int t = r.start; t < r.end; t++)
         {
-            TCLCHistograms* tclcHistograms = object->getTCLCHistograms();
+            auto& tclcHistograms = object->getTCLCHistograms();
 
             TemplateView* neighbor = neighbors[t];
             cv::Rect roi = neighbor->getROI(level);
@@ -902,7 +902,7 @@ class Parallel_For_neighborSearch : public Parallel_For_templateMatcher
             int offsetX = offsetX0 + (centerX0 - centerX);
             int offsetY = offsetY0 + (centerY0 - centerY);
 
-            float e = evaluateEnergyFunction(tclcHistograms,
+            float e = evaluateEnergyFunction(&tclcHistograms,
                                              compressedPixelData,
                                              binned,
                                              roi,
