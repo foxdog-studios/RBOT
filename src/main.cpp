@@ -33,6 +33,8 @@
  * along with RBOT. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string>
+
 #include <QApplication>
 #include <QThread>
 #include <opencv2/core.hpp>
@@ -78,32 +80,68 @@ cv::Mat drawResultOverlay(const vector<Object3D*>& objects, const cv::Mat& frame
     return result;
 }
 
+
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    // FDS hard coded 
+    auto const device_path = "/dev/c920-2";
+    auto const width = 640;
+    auto const height = 480;
+
+    auto video = cv::VideoCapture();
+
+    if (!video.open(device_path, cv::CAP_V4L2))
+    {
+        std::cerr << "Unable to open video device\n";
+        return -1;
+    }
+
+    /* if (!video.set(CV_CAP_PROP_FOURCC, CV_FOURCC('M', 'J', 'P', 'G'))) */
+    /* { */
+    /*     std::cerr << "Unable to set capture format\n"; */
+    /*     return -1; */
+    /* } */
+
+    if (!video.set(cv::CAP_PROP_FRAME_WIDTH, width))
+    {
+        std::cerr << "Unable to set capture frame width\n";
+        return -1;
+    }
+
+    if (!video.set(cv::CAP_PROP_FRAME_HEIGHT, height))
+    {
+        std::cerr << "Unable to set capture frame height\n";
+        return -1;
+    }
+
     // camera image size
-    int width = 640;
-    int height = 512;
+    /* int width = 640; */
+    /* int height = 512; */
     
     // near and far plane of the OpenGL view frustum
     float zNear = 10.0;
     float zFar = 10000.0;
     
     // camera instrinsics
-    Matx33f K = Matx33f(650.048, 0, 324.328, 0, 647.183, 257.323, 0, 0, 1);
-    Matx14f distCoeffs =  Matx14f(0.0, 0.0, 0.0, 0.0);
+    // FDS hardcoded from tracker/local/tracker.yaml
+    Matx33f K = Matx33f(627.746, 0, 327.113, 0, 627.746, 242.4199, 0, 0, 1);
+    Matx14f distCoeffs =  Matx14f(0.0, -0.0678, 0.0153, 0.0);
     
     // distances for the pose detection template generation
-    vector<float> distances = {200.0f, 400.0f, 600.0f};
+    /* vector<float> distances = {400.0f, 800.0f, 1200.0f}; */
+    // FDS
+    vector<float> distances = {300.0f, 500.0f, 700.0f};
     
     // load 3D objects
     vector<Object3D*> objects;
-    objects.push_back(new Object3D("data/squirrel_demo_low.obj", 15, -35, 515, 55, -20, 205, 1.0, 0.55f, distances));
+    objects.push_back(new Object3D(argv[1], 15, -45, std::stof(argv[2]), 115, 0, 45, 1.0, 0.55f, distances));
     //objects.push_back(new Object3D("data/a_second_model.obj", -50, 0, 600, 30, 0, 180, 1.0, 0.55f, distances2));
     
     // create the pose estimator
-    PoseEstimator6D* poseEstimator = new PoseEstimator6D(width, height, zNear, zFar, K, distCoeffs, objects);
+    PoseEstimator6D* poseEstimator = new PoseEstimator6D( width, height, zNear, zFar, K, distCoeffs, objects);
     
     // move the OpenGL context for offscreen rendering to the current thread, if run in a seperate QT worker thread (unnessary in this example)
     //RenderingEngine::Instance()->getContext()->moveToThread(this);
@@ -119,10 +157,17 @@ int main(int argc, char *argv[])
     while(true)
     {
         // obtain an input image
-        frame = imread("data/frame.png");
+        /* frame = imread("data/frame.png"); */
+
+        video >> frame;
+
+        if (frame.empty()) {
+            continue;
+        }
+
         
         // the main pose uodate call
-        poseEstimator->estimatePoses(frame, false, true);
+        poseEstimator->estimatePoses(frame, true, false);
         
         cout << objects[0]->getPose() << endl;
         
@@ -143,7 +188,7 @@ int main(int argc, char *argv[])
         if(key == (int)'1')
         {
             poseEstimator->toggleTracking(frame, 0, false);
-            poseEstimator->estimatePoses(frame, false, false);
+            poseEstimator->estimatePoses(frame, true, false);
             timeout = 1;
             showHelp = !showHelp;
         }
@@ -171,6 +216,6 @@ int main(int argc, char *argv[])
         delete objects[i];
     }
     objects.clear();
-    
     delete poseEstimator;
+    video.release();
 }
