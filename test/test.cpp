@@ -1,13 +1,17 @@
 #include <cstring>
+#include <filesystem>
 #include <iostream>
+#include <string>
+#include <variant>
 
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 
+#include <cxxopts.hpp>
+
 #include <opencv2/core.hpp>
 
-#include "../src/Arguments.hpp"
 #include "../src/shm.hpp"
 #include "../src/video.hpp"
 
@@ -16,21 +20,75 @@ auto main(int argc, char** argv) -> int
     using namespace boost::interprocess;
     using namespace fds;
 
-    auto const args = Arguments{argc, argv};
+    auto options = cxxopts::Options{"shmvideo"};
+    auto devicePathValue = cxxopts::value<std::filesystem::path>();
+
+    if (auto const devicePath = fds::findDevicePath(); devicePath)
+    {
+        devicePathValue->default_value(devicePath.value());
+    }
+
+    auto addOption = options.add_options();
+    addOption("h,help", "print this message");
+    addOption("d,device", "video device path", devicePathValue);
+
+    auto result = [&]() -> std::variant<cxxopts::ParseResult, std::string> {
+        try
+        {
+            return {options.parse(argc, argv)};
+        }
+        catch (cxxopts::invalid_option_format_error const& error)
+        {
+            return {error.what()};
+        }
+        catch (cxxopts::option_not_exists_exception const& error)
+        {
+            return {error.what()};
+        }
+        catch (cxxopts::option_requires_argument_exception const& error)
+        {
+            return {error.what()};
+        }
+    }();
+
+    if (std::holds_alternative<std::string>(result))
+    {
+        auto const& error = std::get<std::string>(result);
+        std::cout << error << '\n' << std::flush;
+        return 1;
+    }
+
+    auto const& args = std::get<cxxopts::ParseResult>(result);
+
+    if (args.count("help"))
+    {
+        std::cout << options.help() << std::flush;
+        return 0;
+    }
+
+    if (!devicePathValue->has_default() && args.count("device") == 0)
+    {
+        std::cerr << "Cannot find a C920 camera, please use -d/--device\n"
+                  << std::flush;
+        return 1;
+    }
+
     constexpr auto width = 640;
     constexpr auto height = 480;
     constexpr auto channels = 3;
-    auto video = fds::makeCVVideo(args.getDevicePath(), width, height);
 
-    // Remove shared memory on construction and destruction
-    struct shm_remove
+    auto const devicePath = args["device"].as<std::filesystem::path>();
+    std::cout << "Opening " << devicePath << '\n' << std::flush;
+    auto video = fds::makeCVVideo(devicePath, width, height);
+
+    struct SHMRemove
     {
-        shm_remove()
+        SHMRemove()
         {
             shared_memory_object::remove(fds::sharedDataName);
         }
 
-        ~shm_remove()
+        ~SHMRemove()
         {
             shared_memory_object::remove(fds::sharedDataName);
         }

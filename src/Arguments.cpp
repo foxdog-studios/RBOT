@@ -1,12 +1,13 @@
 #include "Arguments.hpp"
 
 #include <filesystem>
-#include <glob.h>
 #include <iostream>
 #include <optional>
 #include <string>
 
 #include <cxxopts.hpp>
+
+#include "video.hpp"
 
 namespace fds
 {
@@ -15,16 +16,9 @@ namespace fds
         auto options = cxxopts::Options{"RBOT"};
         auto device_value = cxxopts::value<std::string>();
 
+        if (auto const devicePath = fds::findDevicePath(); devicePath)
         {
-            auto result = glob_t{};
-            glob("/dev/c920-*", GLOB_ERR, nullptr, &result);
-
-            if (result.gl_pathc != 0)
-            {
-                device_value->default_value(result.gl_pathv[0]);
-            }
-
-            globfree(&result);
+            device_value->default_value(devicePath.value());
         }
 
         // clang-format off

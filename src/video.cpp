@@ -3,7 +3,9 @@
 #include <chrono>
 #include <exception>
 #include <filesystem>
+#include <glob.h>
 #include <memory>
+#include <optional>
 #include <thread>
 
 #include <boost/interprocess/mapped_region.hpp>
@@ -126,4 +128,27 @@ namespace fds
     {
         return std::make_unique<SHMVideo>();
     }
+
+    auto findDevicePath() noexcept -> std::optional<std::filesystem::path>
+    {
+        struct ManagedGlob
+        {
+            glob_t data = glob_t{};
+
+            ~ManagedGlob()
+            {
+                ::globfree(&this->data);
+            }
+        } result;
+
+        ::glob("/dev/c920-*", GLOB_ERR, nullptr, &result.data);
+
+        if (result.data.gl_pathc == 0)
+        {
+            return {};
+        }
+
+        return {result.data.gl_pathv[0]};
+    }
+
 } // namespace fds
