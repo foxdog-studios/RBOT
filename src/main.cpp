@@ -243,12 +243,7 @@ int main(int argc, char* argv[])
 
     for (cv::Mat frame;;)
     {
-        video->tryReadFrameInto(frame);
-
-        if (frame.empty())
-        {
-            continue;
-        }
+        video->readFrameInto(frame);
 
         // the main pose uodate call
         poseEstimator.estimatePoses(frame, true, false);

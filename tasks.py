@@ -40,7 +40,7 @@ def cmake(ctx):
             'cmake',
             '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
             '-DCMAKE_CXX_STANDARD=17',
-            '-DCMAKE_CXX_STANARD_REQUIRED=ON',
+            '-DCMAKE_CXX_STANDARD_REQUIRED=ON',
             '-DCMAKE_CXX_EXTENSIONS=OFF',
             '..',
         ])

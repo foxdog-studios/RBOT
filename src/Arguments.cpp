@@ -43,7 +43,17 @@ namespace fds
         options.parse_positional("object");
         options.positional_help("object");
 
-        auto const result = options.parse(argc, argv);
+        auto const result = [&]() {
+            try
+            {
+                return options.parse(argc, argv);
+            }
+            catch (cxxopts::option_not_exists_exception& error)
+            {
+                std::cerr << error.what() << '\n' << std::flush;
+                ::exit(0);
+            }
+        }();
 
         if (result.count("help") != 0)
         {

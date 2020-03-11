@@ -10,7 +10,7 @@ namespace fds
     {
       public:
         virtual ~Video(){};
-        virtual auto tryReadFrameInto(cv::Mat& destination) -> void = 0;
+        virtual auto readFrameInto(cv::Mat& destination) -> void = 0;
     };
 
     auto makeCVVideo(std::filesystem::path const& devicePath,
