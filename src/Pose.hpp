@@ -14,32 +14,38 @@ namespace fds
 
         auto setTx(int const tx) noexcept -> void
         {
-            this->tx = static_cast<float>(tx);
+            set(this->tx, tx);
         }
 
         auto setTy(int const ty) noexcept -> void
         {
-            this->ty = static_cast<float>(ty);
+            set(this->ty, ty);
         }
 
         auto setTz(int const tz) noexcept -> void
         {
-            this->tz = static_cast<float>(tz);
+            set(this->tz, tz);
         }
 
         auto setAlpha(int const alpha) noexcept -> void
         {
-            this->alpha = static_cast<float>(alpha);
+            set(this->alpha, alpha);
         }
 
         auto setBeta(int const beta) noexcept -> void
         {
-            this->beta = static_cast<float>(beta);
+            set(this->beta, beta);
         }
 
         auto setGamma(int const gamma) noexcept -> void
         {
-            this->gamma = static_cast<float>(gamma);
+            set(this->gamma, gamma);
+        }
+
+      private:
+        static auto set(float& destination, int const value) noexcept -> void
+        {
+            destination = static_cast<float>(value);
         }
     };
 } // namespace fds
