@@ -1,9 +1,8 @@
 from __future__ import annotations
-import os
 import shlex
 from pathlib import Path
 
-from invoke import task
+from invoke import Context, task
 
 import charm
 
@@ -24,44 +23,51 @@ def setup(ctx, clean=True):
         clean_task(ctx)
     charm.setup(ctx, packages=[
         'assimp',
-        'cmake',
         'cxxopts',
-        'make',
+        'meson',
+        'ninja',
         'opencv',
     ])
-    cmake(ctx)
 
 
 @task
-def cmake(ctx):
-    BUILD_PATH.mkdir(parents=True, exist_ok=True)
-    with ctx.cd(str(BUILD_PATH)):
-        command = shlex.join([
-            'cmake',
-            '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
-            '-DCMAKE_CXX_STANDARD=17',
-            '-DCMAKE_CXX_STANDARD_REQUIRED=ON',
-            '-DCMAKE_CXX_EXTENSIONS=OFF',
-            '..',
-        ])
-
-        print(command)
-
-        ctx.run(command, env={
-            'CC': 'ccache clang',
-            'CCFLAGS': '-Wall -O3 -flto',
-            'CXX': 'ccache clang++',
-            'CXXFLAGS': '-Wall -O3 -flto',
-        })
+def meson(ctx):
+    with project.cd(ctx):
+        ctx.run(f'meson {BUILD_PATH}', pty=True)
 
 
-@task(default=True)
-def make(ctx):
-    with ctx.cd(str(BUILD_PATH)):
-        args = ['make']
-        cpu_count = os.cpu_count()
-        if cpu_count is not None:
-            args.append(f'-j{cpu_count}')
-        command = shlex.join(args)
-        print(command)
-        ctx.run(command, pty=True)
+def run_ninja(ctx: Context, *targets: str, hide: bool = False) -> None:
+    command = shlex.join(['ninja', '-C', str(BUILD_PATH), *targets])
+    charm.print_shell_command(command)
+    ctx.run(command, hide=hide, pty=True)
+
+
+@task(name='ninja', default=True)
+def ninja_task(ctx):
+    run_ninja(ctx)
+
+
+@task
+def rbot(ctx, object=None, shm=False, ninja=True):
+    if object is None:
+        object = str(project / 'data/ship-hull.obj')
+    if ninja:
+        run_ninja(ctx, 'rbot')
+    args = [str(BUILD_PATH / 'rbot')]
+    if shm:
+        args.append('-v')
+        args.append('shm')
+    args.append(object)
+    command = shlex.join(args)
+    env = {'RBOT_SHADERS_PATH': str(project / 'src')}
+    charm.print_shell_command(command, env=env)
+    ctx.run(command, env=env)
+
+
+@task
+def shmvideo(ctx, ninja=True):
+    if ninja:
+        run_ninja(ctx, 'shmvideo')
+    command = shlex.join([str(BUILD_PATH / 'shmvideo')])
+    charm.print_shell_command(command)
+    ctx.run(command)

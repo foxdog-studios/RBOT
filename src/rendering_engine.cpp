@@ -35,7 +35,7 @@
 
 #include "rendering_engine.h"
 
-#include <iostream>
+#include <cstdlib>
 
 using namespace std;
 using namespace cv;
@@ -181,9 +181,6 @@ void RenderingEngine::init(const Matx33f& K,
         calibrationMatrices.push_back(K_l);
     }
 
-    cout << "GL Version " << glGetString(GL_VERSION) << endl
-         << "GLSL Version " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
-
     glEnable(GL_DEPTH);
     glEnable(GL_DEPTH_TEST);
 
@@ -198,7 +195,12 @@ void RenderingEngine::init(const Matx33f& K,
 
     initRenderingBuffers();
 
-    shaderFolder = "src/";
+    shaderFolder = std::getenv("RBOT_SHADERS_PATH");
+
+    if (!shaderFolder.endsWith('/'))
+    {
+        shaderFolder.append('/');
+    }
 
     initShaderProgram(silhouetteShaderProgram, "silhouette");
     initShaderProgram(phongblinnShaderProgram, "phongblinn");
