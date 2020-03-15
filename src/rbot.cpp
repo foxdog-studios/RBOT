@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
     // distances for the pose detection template generation
     /* vector<float> distances = {400.0f, 800.0f, 1200.0f}; */
     // FDS
-    vector<float> distances = {800.0f, 1000.0f, 1200.0f};
+    vector<float> distances = {500.0f, 1000.0f, 1200.0f};
 
     auto pose = fds::Pose{15, -45, args.getZDistance(), 115, 0, 45};
 
@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
                            pose.beta,
                            pose.gamma,
                            1.0,
-                           0.55f,
+                           args.get_quality_threshold(),
                            distances);
 
     auto objects = std::vector<Object3D*>{&object};
@@ -163,22 +163,24 @@ int main(int argc, char* argv[])
         (*(TrackbarAction*)userdata)(pos);
     };
 
-    int tx = pose.tx;
-    int tx_max = 100;
+    constexpr auto xOffset = 500;
+    int tx = pose.tx + xOffset;
+    int tx_max = xOffset * 2;
 
     TrackbarAction handleX = [&object, &pose](int newTx) {
-        pose.setTx(newTx);
+        pose.setTx(newTx - xOffset);
         object.setPose(pose);
     };
 
     cv::createTrackbar(
         "x", window_name, &tx, tx_max, trackbarCallback, (void*)&handleX);
 
-    int ty = pose.ty;
-    int ty_max = 100;
+    constexpr auto yOffset = 500;
+    int ty = pose.ty + yOffset;
+    int ty_max = yOffset * 2;
 
     TrackbarAction handleY = [&object, &pose](int newTy) {
-        pose.setTy(newTy);
+        pose.setTy(newTy - yOffset);
         object.setPose(pose);
     };
 
@@ -246,7 +248,7 @@ int main(int argc, char* argv[])
         video->readFrameInto(frame);
 
         // the main pose uodate call
-        poseEstimator.estimatePoses(frame, true, false);
+        poseEstimator.estimatePoses(frame, true, true);
 
         // render the models with the resulting pose estimates ontop of the
         // input image
@@ -269,6 +271,21 @@ int main(int argc, char* argv[])
                     Scalar(255, 255, 255),
                     1);
         }
+
+        putText(result,
+                    object.isTrackingLost() ? "LOST" : "TRACKING",
+                    Point(10, 30),
+                    FONT_HERSHEY_DUPLEX,
+                    1.0,
+                    Scalar(255, 255, 255),
+                    1);
+        putText(result,
+                    object.isInitialized() ? "INITIALIZED" : "UNINITIALIZED",
+                    Point(10, 50),
+                    FONT_HERSHEY_DUPLEX,
+                    1.0,
+                    Scalar(255, 255, 255),
+                    1);
 
         imshow(window_name, result);
 

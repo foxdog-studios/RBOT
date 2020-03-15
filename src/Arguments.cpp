@@ -29,6 +29,8 @@ namespace fds
              cxxopts::value<bool>()->default_value("false"))
             ("v,video", "video source, either cv or shm",
              cxxopts::value<std::string>()->default_value("cv"))
+            ("q,quality-threshold", "quality threshold before object lost",
+             cxxopts::value<float>()->default_value("0.55"))
             ("z,z-distance", "initial z-distance of object",
              cxxopts::value<float>()->default_value("1000"))
             ("object", "object file path", cxxopts::value<std::string>());
@@ -90,6 +92,7 @@ namespace fds
         this->generateObjectTemplates =
             result["gen-object-templates"].as<bool>();
         this->objectPath = result["object"].as<std::string>();
+        this->quality_threshold = result["quality-threshold"].as<float>();
         this->zDistance = result["z-distance"].as<float>();
     }
 
@@ -117,6 +120,11 @@ namespace fds
     auto Arguments::useSHMVideo() const noexcept -> bool
     {
         return this->videoSource == VideoSource::shm;
+    }
+
+    auto Arguments::get_quality_threshold() const noexcept -> float
+    {
+        return this->quality_threshold;
     }
 
     auto Arguments::getZDistance() const noexcept -> float

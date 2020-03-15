@@ -11,6 +11,7 @@ namespace fds
         auto getDevicePath() const -> std::filesystem::path;
         auto getGenerateObjectTemplates() const noexcept -> bool;
         auto getObjectPath() const noexcept -> std::filesystem::path;
+        auto get_quality_threshold() const noexcept -> float;
         auto getZDistance() const noexcept -> float;
         auto useCVVideo() const noexcept -> bool;
         auto useSHMVideo() const noexcept -> bool;
@@ -25,6 +26,7 @@ namespace fds
         std::optional<std::filesystem::path> devicePath;
         bool generateObjectTemplates;
         std::filesystem::path objectPath;
+        float quality_threshold;
         VideoSource videoSource;
         float zDistance;
     };
