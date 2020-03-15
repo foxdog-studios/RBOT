@@ -116,12 +116,9 @@ int main(int argc, char* argv[])
     Matx33f K = Matx33f(627.746, 0, 327.113, 0, 627.746, 242.4199, 0, 0, 1);
     Matx14f distCoeffs = Matx14f(0.0, -0.0678, 0.0153, 0.0);
 
-    // distances for the pose detection template generation
-    /* vector<float> distances = {400.0f, 800.0f, 1200.0f}; */
-    // FDS
-    vector<float> distances = {500.0f, 1000.0f, 1200.0f};
-
     auto pose = fds::Pose{15, -45, args.getZDistance(), 115, 0, 45};
+
+    auto distances = args.getTemplateDistances();
 
     auto object = Object3D(args.getObjectPath(),
                            pose.tx,
@@ -131,7 +128,7 @@ int main(int argc, char* argv[])
                            pose.beta,
                            pose.gamma,
                            1.0,
-                           args.get_quality_threshold(),
+                           args.getQualityThreshold(),
                            distances);
 
     auto objects = std::vector<Object3D*>{&object};

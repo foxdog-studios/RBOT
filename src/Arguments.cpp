@@ -27,6 +27,8 @@ namespace fds
             ("d,device", "cv video device path", device_value)
             ("g,gen-object-templates", "generate object templates",
              cxxopts::value<bool>()->default_value("false"))
+            ("t,template-distances", "template distances in mm, used to track lost objects",
+             cxxopts::value<std::vector<float>>()->default_value("500,1000,1200"))
             ("v,video", "video source, either cv or shm",
              cxxopts::value<std::string>()->default_value("cv"))
             ("q,quality-threshold", "quality threshold before object lost",
@@ -92,7 +94,8 @@ namespace fds
         this->generateObjectTemplates =
             result["gen-object-templates"].as<bool>();
         this->objectPath = result["object"].as<std::string>();
-        this->quality_threshold = result["quality-threshold"].as<float>();
+        this->qualityThreshold = result["quality-threshold"].as<float>();
+        this->templateDistances = result["template-distances"].as<std::vector<float>>();
         this->zDistance = result["z-distance"].as<float>();
     }
 
@@ -122,9 +125,14 @@ namespace fds
         return this->videoSource == VideoSource::shm;
     }
 
-    auto Arguments::get_quality_threshold() const noexcept -> float
+    auto Arguments::getQualityThreshold() const noexcept -> float
     {
-        return this->quality_threshold;
+        return this->qualityThreshold;
+    }
+
+    auto Arguments::getTemplateDistances() const noexcept -> const std::vector<float>
+    {
+        return this->templateDistances;
     }
 
     auto Arguments::getZDistance() const noexcept -> float

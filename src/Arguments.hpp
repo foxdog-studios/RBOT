@@ -1,6 +1,7 @@
 #pragma once
 #include <filesystem>
 #include <optional>
+#include <vector>
 
 namespace fds
 {
@@ -11,7 +12,8 @@ namespace fds
         auto getDevicePath() const -> std::filesystem::path;
         auto getGenerateObjectTemplates() const noexcept -> bool;
         auto getObjectPath() const noexcept -> std::filesystem::path;
-        auto get_quality_threshold() const noexcept -> float;
+        auto getQualityThreshold() const noexcept -> float;
+        auto getTemplateDistances() const noexcept -> const std::vector<float>;
         auto getZDistance() const noexcept -> float;
         auto useCVVideo() const noexcept -> bool;
         auto useSHMVideo() const noexcept -> bool;
@@ -26,7 +28,8 @@ namespace fds
         std::optional<std::filesystem::path> devicePath;
         bool generateObjectTemplates;
         std::filesystem::path objectPath;
-        float quality_threshold;
+        float qualityThreshold;
+        std::vector<float> templateDistances;
         VideoSource videoSource;
         float zDistance;
     };
