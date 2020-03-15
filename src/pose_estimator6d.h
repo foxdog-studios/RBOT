@@ -100,7 +100,7 @@ class PoseEstimator6D
      * be undistorted for initialization (default = true).
      */
     void
-    toggleTracking(cv::Mat& frame, int objectIndex, bool undistortFrame = true);
+    toggleTracking(cv::Mat& frame, size_t objectIndex, bool undistortFrame = true);
 
     /**
      *  This method tries to track and detect the 6DOF poses of all
@@ -177,8 +177,7 @@ class PoseEstimator6D
                                  const cv::Rect& roi,
                                  int offsetX,
                                  int offsetY,
-                                 int level,
-                                 int threads);
+                                 int level);
 
     float
     evaluateEnergyFunction_local(TCLCHistograms* tclcHistograms,
@@ -582,7 +581,6 @@ class Parallel_For_templateMatcher : public cv::ParallelLoopBody
     evaluateEnergyFunction(TCLCHistograms* tclcHistograms,
                            const std::vector<PixelData>& compressedPixelData,
                            const cv::Mat& binned,
-                           const cv::Rect& roi,
                            int offsetX,
                            int offsetY) const
     {
@@ -599,7 +597,7 @@ class Parallel_For_templateMatcher : public cv::ParallelLoopBody
         int fullWidth = binned.cols;
         int fullHeight = binned.rows;
 
-        for (int p = 0; p < compressedPixelData.size(); p++)
+        for (size_t p = 0; p < compressedPixelData.size(); p++)
         {
             PixelData pixelData = compressedPixelData[p];
 
@@ -783,7 +781,7 @@ class Parallel_For_exhaustiveSearch : public Parallel_For_templateMatcher
             int finalY = 0;
 
             int initCnt = 0;
-            for (int i = 0; i < centersIDs.size(); i++)
+            for (size_t i = 0; i < centersIDs.size(); i++)
             {
                 if (tclcHistograms.getInitialized().data[centersIDs[i].z])
                     initCnt++;
@@ -809,7 +807,6 @@ class Parallel_For_exhaustiveSearch : public Parallel_For_templateMatcher
                                 evaluateEnergyFunction(&tclcHistograms,
                                                        compressedPixelData,
                                                        binned,
-                                                       roi,
                                                        offsetX,
                                                        offsetY);
 
@@ -905,7 +902,6 @@ class Parallel_For_neighborSearch : public Parallel_For_templateMatcher
             float e = evaluateEnergyFunction(&tclcHistograms,
                                              compressedPixelData,
                                              binned,
-                                             roi,
                                              offsetX,
                                              offsetY);
 

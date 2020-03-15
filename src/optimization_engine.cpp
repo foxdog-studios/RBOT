@@ -92,7 +92,7 @@ void OptimizationEngine::runIteration(vector<Object3D*>& objects,
 
     // increase the image pyramid level until the area of the 2D bounding box
     // of every object is greater than 3000 pixels in the image
-    for (int o = 0; o < objects.size(); o++)
+    for (size_t o = 0; o < objects.size(); o++)
     {
         if (objects[o]->isInitialized())
         {
@@ -136,7 +136,7 @@ void OptimizationEngine::runIteration(vector<Object3D*>& objects,
         mask = depth;
     }
 
-    for (int o = 0; o < objects.size(); o++)
+    for (size_t o = 0; o < objects.size(); o++)
     {
         if (objects[o]->isInitialized())
         {

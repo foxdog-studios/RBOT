@@ -240,6 +240,8 @@ int main(int argc, char* argv[])
                        trackbarCallback,
                        (void*)&handleGamma);
 
+    auto is_recording = false;
+
     for (cv::Mat frame;;)
     {
         video->readFrameInto(frame);
@@ -261,7 +263,7 @@ int main(int argc, char* argv[])
                     Scalar(255, 255, 255),
                     1);
             putText(result,
-                    "or 'c' to quit",
+                    "or 'q' to quit",
                     Point(205, 285),
                     FONT_HERSHEY_DUPLEX,
                     1.0,
@@ -278,11 +280,19 @@ int main(int argc, char* argv[])
                     1);
         putText(result,
                     object.isInitialized() ? "INITIALIZED" : "UNINITIALIZED",
-                    Point(10, 50),
+                    Point(10, 55),
                     FONT_HERSHEY_DUPLEX,
                     1.0,
                     Scalar(255, 255, 255),
                     1);
+        putText(result,
+                    is_recording ? "RECORDING" : "R to begin recording",
+                    Point(10, 85),
+                    FONT_HERSHEY_DUPLEX,
+                    1.0,
+                    is_recording ? Scalar(0, 0, 255) : Scalar(255, 255, 255),
+                    1);
+
 
         imshow(window_name, result);
 
@@ -295,16 +305,13 @@ int main(int argc, char* argv[])
             poseEstimator.estimatePoses(frame, true, false);
             showHelp = !showHelp;
         }
-        if (key == (int)'2') // the same for a second object
-        {
-            // poseEstimator->toggleTracking(frame, 1, false);
-            // poseEstimator->estimatePoses(frame, false, false);
+        if (key == (int)'r') {
+            is_recording = !is_recording;
         }
-        // reset the system to the initial state
-        if (key == (int)'r')
+        if (key == (int)'e')
             poseEstimator.reset();
         // stop the demo
-        if (key == (int)'c')
+        if (key == (int)'q')
             break;
     }
 

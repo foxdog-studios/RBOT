@@ -469,7 +469,7 @@ class Parallel_For_distanceTransformCols : public cv::ParallelLoopBody
                     z[k] = s;
                     v2 = q2;
                 }
-                if (sign == d - sign + !sign < 0)
+                if (sign == (d - sign + !sign < 0))
                 {
                     int fq;
                     int q;

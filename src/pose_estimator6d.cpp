@@ -70,7 +70,7 @@ PoseEstimator6D::PoseEstimator6D(int width,
     renderingEngine->init(K, width, height, zNear, zFar, 4);
     renderingEngine->makeCurrent();
 
-    for (int i = 0; i < objects.size(); i++)
+    for (size_t i = 0; i < objects.size(); i++)
     {
         objects[i]->setModelID(i + 1);
         this->objects.push_back(objects[i]);
@@ -91,7 +91,7 @@ PoseEstimator6D::~PoseEstimator6D()
 }
 
 void PoseEstimator6D::toggleTracking(cv::Mat& frame,
-                                     int objectIndex,
+                                     size_t objectIndex,
                                      bool undistortFrame)
 {
     if (objectIndex >= objects.size())
@@ -125,7 +125,7 @@ void PoseEstimator6D::toggleTracking(cv::Mat& frame,
         objects[objectIndex]->reset();
 
         initialized = false;
-        for (int o = 0; o < objects.size(); o++)
+        for (size_t o = 0; o < objects.size(); o++)
         {
             initialized |= objects[o]->isInitialized();
         }
@@ -175,7 +175,7 @@ void PoseEstimator6D::estimatePoses(cv::Mat& frame,
                           objects[0]->getTCLCHistograms().getNumBins(),
                           8));
 
-        for (int i = 0; i < objects.size(); i++)
+        for (size_t i = 0; i < objects.size(); i++)
         {
             if (objects[i]->isInitialized())
             {
@@ -238,7 +238,7 @@ void PoseEstimator6D::relocalize(Object3D* object, vector<Mat>& imagePyramid)
     // KEEP ONLY THE BEST MATCHING DISTANCE PER TEMPLATE
     vector<pair<float, TemplateView*>> errorKVMap0;
 
-    for (int i = 0; i < templateViews.size(); i += numDistances)
+    for (size_t i = 0; i < templateViews.size(); i += numDistances)
     {
         float minE = FLT_MAX;
         int minIdx = -1;
@@ -274,7 +274,7 @@ void PoseEstimator6D::relocalize(Object3D* object, vector<Mat>& imagePyramid)
 
     vector<pair<float, TemplateView*>> errorKVMap;
 
-    for (int i = 0; i < errorKVMap0.size() / 2; i++)
+    for (size_t i = 0; i < errorKVMap0.size() / 2; i++)
     {
         float kve = errorKVMap0[i].first;
         TemplateView* templateView = errorKVMap0[i].second;
@@ -286,7 +286,7 @@ void PoseEstimator6D::relocalize(Object3D* object, vector<Mat>& imagePyramid)
                 Parallel_For_neighborSearch(
                     object, templateView, binned, level, 1));
 
-            for (int n = 0; n < templateView->getNeighborTemplates().size();
+            for (size_t n = 0; n < templateView->getNeighborTemplates().size();
                  n++)
             {
                 TemplateView* kvn = templateView->getNeighborTemplates()[n];
@@ -309,7 +309,6 @@ void PoseEstimator6D::relocalize(Object3D* object, vector<Mat>& imagePyramid)
                                    8));
 
     float minE = FLT_MAX;
-    int finalIdx = -1;
     Matx44f finalPose;
 
     bool trackingLost = true;
@@ -369,7 +368,6 @@ void PoseEstimator6D::relocalize(Object3D* object, vector<Mat>& imagePyramid)
                 if (e < object->getQualityThreshold())
                 {
                     trackingLost = false;
-                    finalIdx = i;
                 }
             }
         }
@@ -408,7 +406,7 @@ PoseEstimator6D::computeBoundingBox(const std::vector<cv::Point3i>& centersIDs,
     int minX = INT_MAX, minY = INT_MAX;
     int maxX = -1, maxY = -1;
 
-    for (int i = 0; i < centersIDs.size(); i++)
+    for (size_t i = 0; i < centersIDs.size(); i++)
     {
         Point3i p = centersIDs[i];
         int x = p.x / pow(2, level);
@@ -453,7 +451,7 @@ float PoseEstimator6D::evaluateEnergyFunction(Object3D* object,
     Mat mask = renderingEngine->downloadFrame(RenderingEngine::MASK);
     Mat depth = renderingEngine->downloadFrame(RenderingEngine::DEPTH);
 
-    return evaluateEnergyFunction(object, mask, depth, binned, level, 8);
+    return evaluateEnergyFunction(object, mask, depth, binned, level, threads);
 }
 
 float PoseEstimator6D::evaluateEnergyFunction(Object3D* object,
@@ -485,7 +483,7 @@ float PoseEstimator6D::evaluateEnergyFunction(Object3D* object,
 
         Mat heaviside;
         parallel_for_(cv::Range(0, 8),
-                      Parallel_For_convertToHeaviside(sdt, heaviside, 8));
+                      Parallel_For_convertToHeaviside(sdt, heaviside, threads));
 
         return evaluateEnergyFunction(&tclcHistograms,
                                       centersIDs,
@@ -494,8 +492,7 @@ float PoseEstimator6D::evaluateEnergyFunction(Object3D* object,
                                       roi,
                                       roi.x,
                                       roi.y,
-                                      level,
-                                      8);
+                                      level);
     }
     else
         return 0.0f;
@@ -508,8 +505,7 @@ float PoseEstimator6D::evaluateEnergyFunction(TCLCHistograms* tclcHistograms,
                                               const Rect& roi,
                                               int offsetX,
                                               int offsetY,
-                                              int level,
-                                              int threads)
+                                              int level)
 {
     float e = 0.0f;
     int N = roi.height;
@@ -554,7 +550,7 @@ float PoseEstimator6D::evaluateEnergyFunction(TCLCHistograms* tclcHistograms,
 
 void PoseEstimator6D::reset()
 {
-    for (int i = 0; i < objects.size(); i++)
+    for (size_t i = 0; i < objects.size(); i++)
     {
         objects[i]->reset();
     }
