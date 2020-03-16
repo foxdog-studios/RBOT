@@ -206,6 +206,8 @@ class Model
      */
     cv::Vec3f getRTF();
 
+    auto getDiameter() const noexcept -> float;
+
     /**
      *  Returns the scaling factor specified in the contructor.
      *

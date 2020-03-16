@@ -120,7 +120,8 @@ int main(int argc, char* argv[])
 
     auto distances = args.getTemplateDistances();
 
-    auto object = Object3D(args.getObjectPath(),
+    auto objectPath = args.getObjectPath();
+    auto object = Object3D(objectPath,
                            pose.tx,
                            pose.ty,
                            pose.tz,
@@ -240,7 +241,12 @@ int main(int argc, char* argv[])
                        trackbarCallback,
                        (void*)&handleGamma);
 
-    auto recording = fds::Recording{args.getRecordingDirectory()};
+    auto recording = fds::Recording{
+        args.getRecordingDirectory(),
+        objectPath,
+        K,
+        object.getDiameter(),
+    };
 
     for (cv::Mat frame;;)
     {

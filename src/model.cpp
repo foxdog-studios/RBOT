@@ -203,6 +203,11 @@ Vec3f Model::getRTF()
     return rtf;
 }
 
+auto Model::getDiameter() const noexcept -> float
+{
+    return cv::norm(rtf - lbn);
+}
+
 float Model::getScaling()
 {
 

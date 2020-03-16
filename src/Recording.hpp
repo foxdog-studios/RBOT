@@ -9,7 +9,10 @@ namespace fds
     class Recording final
     {
       public:
-        explicit Recording(std::filesystem::path recordingDirectory);
+        explicit Recording(std::filesystem::path const& recordingDirectory,
+                           std::filesystem::path const& modelPath,
+                           cv::Matx33f const& K,
+                           float diameter);
         auto toggleRecording() noexcept -> void;
         auto getIsRecording() const noexcept -> bool;
         auto getFrameCount() const noexcept -> int;
@@ -25,6 +28,8 @@ namespace fds
         std::filesystem::path const maskDirectory;
         std::filesystem::path const poseDirectory;
 
-        auto makePath(std::filesystem::path const &directory, std::string const &ext) const noexcept -> std::filesystem::path;
+        auto makePath(std::filesystem::path const& directory,
+                      std::string const& ext) const noexcept
+            -> std::filesystem::path;
     };
 } // namespace fds
