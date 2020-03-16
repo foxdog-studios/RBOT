@@ -24,6 +24,7 @@ executable('rbot',
         'src/rbot.cpp',
 
         'src/Arguments.cpp',
+        'src/Recording.cpp',
         'src/model.cpp',
         'src/object3d.cpp',
         'src/optimization_engine.cpp',

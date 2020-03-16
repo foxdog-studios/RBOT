@@ -33,6 +33,7 @@
  * along with RBOT. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <filesystem>
 #include <iostream>
 #include <string>
 
@@ -43,6 +44,7 @@
 
 #include "Arguments.hpp"
 #include "Pose.hpp"
+#include "Recording.hpp"
 #include "object3d.h"
 #include "pose_estimator6d.h"
 #include "video.hpp"
@@ -51,8 +53,7 @@ using namespace std;
 using namespace cv;
 using TrackbarAction = std::function<void(int)>;
 
-cv::Mat drawResultOverlay(const vector<Object3D*>& objects,
-                          const cv::Mat& frame)
+void render(const vector<Object3D*>& objects)
 {
     // render the models with phong shading
     RenderingEngine::Instance()->setLevel(0);
@@ -62,14 +63,13 @@ cv::Mat drawResultOverlay(const vector<Object3D*>& objects,
     // colors.push_back(Point3f(0.2, 0.3, 1.0));
     RenderingEngine::Instance()->renderShaded(
         vector<Model*>(objects.begin(), objects.end()), GL_FILL, colors, true);
+}
 
+cv::Mat drawResultOverlay(const cv::Mat& frame, const cv::Mat& depth)
+{
     // download the rendering to the CPU
     Mat rendering =
         RenderingEngine::Instance()->downloadFrame(RenderingEngine::RGB);
-
-    // download the depth buffer to the CPU
-    Mat depth =
-        RenderingEngine::Instance()->downloadFrame(RenderingEngine::DEPTH);
 
     // compose the rendering with the current camera image for demo purposes
     // (can be done more efficiently directly in OpenGL)
@@ -240,7 +240,7 @@ int main(int argc, char* argv[])
                        trackbarCallback,
                        (void*)&handleGamma);
 
-    auto is_recording = false;
+    auto recording = fds::Recording{args.getRecordingDirectory()};
 
     for (cv::Mat frame;;)
     {
@@ -251,7 +251,12 @@ int main(int argc, char* argv[])
 
         // render the models with the resulting pose estimates ontop of the
         // input image
-        Mat result = drawResultOverlay(objects, frame);
+        render(objects);
+        auto depth =
+            RenderingEngine::Instance()->downloadFrame(RenderingEngine::DEPTH);
+        auto result = drawResultOverlay(frame, depth);
+
+        recording.update(frame, depth, object.getPose());
 
         if (showHelp)
         {
@@ -272,47 +277,58 @@ int main(int argc, char* argv[])
         }
 
         putText(result,
-                    object.isTrackingLost() ? "LOST" : "TRACKING",
-                    Point(10, 30),
-                    FONT_HERSHEY_DUPLEX,
-                    1.0,
-                    Scalar(255, 255, 255),
-                    1);
+                object.isTrackingLost() ? "LOST" : "TRACKING",
+                Point(10, 30),
+                FONT_HERSHEY_DUPLEX,
+                1.0,
+                Scalar(255, 255, 255),
+                1);
         putText(result,
-                    object.isInitialized() ? "INITIALIZED" : "UNINITIALIZED",
-                    Point(10, 55),
-                    FONT_HERSHEY_DUPLEX,
-                    1.0,
-                    Scalar(255, 255, 255),
-                    1);
-        putText(result,
-                    is_recording ? "RECORDING" : "R to begin recording",
-                    Point(10, 85),
-                    FONT_HERSHEY_DUPLEX,
-                    1.0,
-                    is_recording ? Scalar(0, 0, 255) : Scalar(255, 255, 255),
-                    1);
+                object.isInitialized() ? "INITIALIZED" : "UNINITIALIZED",
+                Point(10, 55),
+                FONT_HERSHEY_DUPLEX,
+                1.0,
+                Scalar(255, 255, 255),
+                1);
 
+        auto isRecording = recording.getIsRecording();
+        putText(result,
+                isRecording ? "RECORDING" : "R to begin recording",
+                Point(10, 85),
+                FONT_HERSHEY_DUPLEX,
+                1.0,
+                isRecording ? Scalar(0, 0, 255) : Scalar(255, 255, 255),
+                1);
+        putText(result,
+                "frames: " + std::to_string(recording.getFrameCount()),
+                Point(10, 110),
+                FONT_HERSHEY_DUPLEX,
+                1.0,
+                Scalar(0, 255, 0),
+                1);
 
         imshow(window_name, result);
 
         int key = cv::waitKey(1 /* delay */);
 
-        // start/stop tracking the first object
         if (key == (int)'1')
         {
             poseEstimator.toggleTracking(frame, 0, false);
             poseEstimator.estimatePoses(frame, true, false);
             showHelp = !showHelp;
         }
-        if (key == (int)'r') {
-            is_recording = !is_recording;
+        else if (key == (int)'r')
+        {
+            recording.toggleRecording();
         }
-        if (key == (int)'e')
+        else if (key == (int)'e')
+        {
             poseEstimator.reset();
-        // stop the demo
-        if (key == (int)'q')
+        }
+        else if (key == (int)'q')
+        {
             break;
+        }
     }
 
     // deactivate the offscreen rendering OpenGL context

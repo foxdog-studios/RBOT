@@ -27,19 +27,21 @@ namespace fds
             ("d,device", "cv video device path", device_value)
             ("g,gen-object-templates", "generate object templates",
              cxxopts::value<bool>()->default_value("false"))
+            ("q,quality-threshold", "quality threshold before object lost",
+             cxxopts::value<float>()->default_value("0.55"))
             ("t,template-distances", "template distances in mm, used to track lost objects",
              cxxopts::value<std::vector<float>>()->default_value("500,1000,1200"))
             ("v,video", "video source, either cv or shm",
              cxxopts::value<std::string>()->default_value("cv"))
-            ("q,quality-threshold", "quality threshold before object lost",
-             cxxopts::value<float>()->default_value("0.55"))
             ("z,z-distance", "initial z-distance of object",
              cxxopts::value<float>()->default_value("1000"))
-            ("object", "object file path", cxxopts::value<std::string>());
+            ("object", "object file path", cxxopts::value<std::string>())
+            ("recording-directory", "directory to write recordings to",
+             cxxopts::value<std::string>());
         // clang-format on
 
-        options.parse_positional("object");
-        options.positional_help("object");
+        options.parse_positional({"object", "recording-directory"});
+        options.positional_help("object recording-directory");
 
         auto const result = [&]() {
             try
@@ -49,7 +51,7 @@ namespace fds
             catch (cxxopts::option_not_exists_exception& error)
             {
                 std::cerr << error.what() << '\n' << std::flush;
-                ::exit(0);
+                ::exit(1);
             }
         }();
 
@@ -62,6 +64,12 @@ namespace fds
         if (result.count("object") == 0)
         {
             std::cerr << "An object file is required\n" << std::flush;
+            ::exit(1);
+        }
+
+        if (result.count("recording-directory") == 0)
+        {
+            std::cerr << "A recording directory is required\n" << std::flush;
             ::exit(1);
         }
 
@@ -95,7 +103,10 @@ namespace fds
             result["gen-object-templates"].as<bool>();
         this->objectPath = result["object"].as<std::string>();
         this->qualityThreshold = result["quality-threshold"].as<float>();
-        this->templateDistances = result["template-distances"].as<std::vector<float>>();
+        this->recordingDirectory =
+            result["recording-directory"].as<std::string>();
+        this->templateDistances =
+            result["template-distances"].as<std::vector<float>>();
         this->zDistance = result["z-distance"].as<float>();
     }
 
@@ -130,7 +141,13 @@ namespace fds
         return this->qualityThreshold;
     }
 
-    auto Arguments::getTemplateDistances() const noexcept -> const std::vector<float>
+    auto Arguments::getRecordingDirectory() const noexcept -> std::filesystem::path
+    {
+        return this->recordingDirectory;
+    }
+
+    auto Arguments::getTemplateDistances() const noexcept
+        -> const std::vector<float>
     {
         return this->templateDistances;
     }
