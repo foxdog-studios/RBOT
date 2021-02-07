@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
                      : fds::makeSHMVideo();
 
     // Near and far plane of the OpenGL view frustum.
-    auto const zNear = 10.0f;
+    auto const zNear = 0.005f;
     auto const zFar = 10000.0f;
 
     // Camera instrinsics
@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
     Matx33f K = Matx33f(627.746, 0, 327.113, 0, 627.746, 242.4199, 0, 0, 1);
     Matx14f distCoeffs = Matx14f(0.0, -0.0678, 0.0153, 0.0);
 
-    auto pose = fds::Pose{15, -45, args.getZDistance(), 115, 0, 45};
+    auto pose = fds::Pose{0, 0, args.getZDistance(), 11, 184, 180};
 
     auto distances = args.getTemplateDistances();
 
@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
 
     constexpr auto xOffset = 500;
     int tx = pose.tx + xOffset;
-    int tx_max = xOffset * 2;
+    int tx_max = 1000;
 
     TrackbarAction handleX = [&object, &pose](int newTx) {
         pose.setTx(newTx - xOffset);
@@ -175,7 +175,7 @@ int main(int argc, char* argv[])
 
     constexpr auto yOffset = 500;
     int ty = pose.ty + yOffset;
-    int ty_max = yOffset * 2;
+    int ty_max = 1000;
 
     TrackbarAction handleY = [&object, &pose](int newTy) {
         pose.setTy(newTy - yOffset);
@@ -253,7 +253,7 @@ int main(int argc, char* argv[])
         video->readFrameInto(frame);
 
         // the main pose uodate call
-        poseEstimator.estimatePoses(frame, true, true);
+        poseEstimator.estimatePoses(frame, false, true);
 
         // render the models with the resulting pose estimates ontop of the
         // input image

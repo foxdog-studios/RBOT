@@ -25,7 +25,7 @@ namespace fds
         fs::create_directories(maskDirectory);
         fs::create_directories(poseDirectory);
         fs::copy(modelPath,
-                 recordingDirectory,
+                 recordingDirectory / "model.ply",
                  fs::copy_options::overwrite_existing);
         auto kFile = cv::FileStorage{recordingDirectory / "camera.yml",
                                      cv::FileStorage::WRITE};
