@@ -12,17 +12,17 @@ namespace fds
         float beta;
         float gamma;
 
-        auto setTx(int const tx) noexcept -> void
+        auto setTx(float const tx) noexcept -> void
         {
             set(this->tx, tx);
         }
 
-        auto setTy(int const ty) noexcept -> void
+        auto setTy(float const ty) noexcept -> void
         {
             set(this->ty, ty);
         }
 
-        auto setTz(int const tz) noexcept -> void
+        auto setTz(float const tz) noexcept -> void
         {
             set(this->tz, tz);
         }
@@ -43,7 +43,7 @@ namespace fds
         }
 
       private:
-        static auto set(float& destination, int const value) noexcept -> void
+        static auto set(float& destination, float const value) noexcept -> void
         {
             destination = static_cast<float>(value);
         }

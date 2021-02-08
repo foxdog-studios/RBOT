@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
     int tx_max = 1000;
 
     TrackbarAction handleX = [&object, &pose](int newTx) {
-        pose.setTx(newTx - xOffset);
+        pose.setTx((newTx - xOffset) / 20.0);
         object.setPose(pose);
     };
 
@@ -178,7 +178,7 @@ int main(int argc, char* argv[])
     int ty_max = 1000;
 
     TrackbarAction handleY = [&object, &pose](int newTy) {
-        pose.setTy(newTy - yOffset);
+        pose.setTy((newTy - yOffset) / 20.0);
         object.setPose(pose);
     };
 
@@ -189,7 +189,7 @@ int main(int argc, char* argv[])
     int tz_max = 1500;
 
     TrackbarAction handleZ = [&object, &pose](int newTz) {
-        pose.setTz(newTz);
+        pose.setTz((newTz) / 10);
         object.setPose(pose);
     };
 
