@@ -18,12 +18,15 @@ namespace fds
         auto getTemplateDistances() const noexcept -> const std::vector<float>;
         auto getZDistance() const noexcept -> float;
         auto useCVVideo() const noexcept -> bool;
+        
+        auto useCVFileVideo() const noexcept -> bool;
         auto useSHMVideo() const noexcept -> bool;
 
       private:
         enum class VideoSource
         {
             cv,
+            file,
             shm,
         };
 

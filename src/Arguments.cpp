@@ -31,7 +31,7 @@ namespace fds
              cxxopts::value<float>()->default_value("0.55"))
             ("t,template-distances", "template distances in mm, used to track lost objects",
              cxxopts::value<std::vector<float>>()->default_value("500,1000,1200"))
-            ("v,video", "video source, either cv or shm",
+            ("v,video", "video source, either cv, file or shm",
              cxxopts::value<std::string>()->default_value("cv"))
             ("z,z-distance", "initial z-distance of object",
              cxxopts::value<float>()->default_value("1000"))
@@ -78,6 +78,9 @@ namespace fds
         if (videoSourceStr == "cv")
         {
             this->videoSource = VideoSource::cv;
+        }
+        else if (videoSourceStr == "file") {
+            this->videoSource = VideoSource::file;
         }
         else if (videoSourceStr == "shm")
         {
@@ -129,6 +132,11 @@ namespace fds
     auto Arguments::useCVVideo() const noexcept -> bool
     {
         return this->videoSource == VideoSource::cv;
+    }
+
+    auto Arguments::useCVFileVideo() const noexcept -> bool
+    {
+        return this->videoSource == VideoSource::file;
     }
 
     auto Arguments::useSHMVideo() const noexcept -> bool

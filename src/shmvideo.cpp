@@ -79,7 +79,7 @@ auto main(int argc, char** argv) -> int
 
     auto const devicePath = args["device"].as<std::filesystem::path>();
     std::cout << "Opening " << devicePath << '\n' << std::flush;
-    auto video = fds::makeCVVideo(devicePath, width, height);
+    auto video = fds::makeCVV4l2Video(devicePath, width, height);
 
     struct SHMRemove
     {

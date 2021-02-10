@@ -104,8 +104,10 @@ int main(int argc, char* argv[])
     auto const height = 480;
 
     auto video = args.useCVVideo()
-                     ? fds::makeCVVideo(args.getDevicePath(), width, height)
-                     : fds::makeSHMVideo();
+        ? fds::makeCVV4l2Video(args.getDevicePath(), width, height)
+        : args.useCVFileVideo()
+            ? fds::makeCVFileVideo(args.getDevicePath(), width, height) 
+            : fds::makeSHMVideo();
 
     // Near and far plane of the OpenGL view frustum.
     auto const zNear = 0.005f;
@@ -330,6 +332,10 @@ int main(int argc, char* argv[])
         else if (key == (int)'e')
         {
             poseEstimator.reset();
+        }
+        else if (key == (int)'p')
+        {
+            video->togglePause();
         }
         else if (key == (int)'q')
         {
