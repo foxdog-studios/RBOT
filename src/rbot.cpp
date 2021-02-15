@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
     // Camera instrinsics
     // FDS hardcoded from tracker/local/tracker.yaml
     Matx33f K = Matx33f(627.746, 0, 327.113, 0, 627.746, 242.4199, 0, 0, 1);
-    Matx14f distCoeffs = Matx14f(0.0, -0.0678, 0.0153, 0.0);
+    Matx14f distCoeffs = Matx14f(0.0, 0, 0.0, 0.0);
 
     auto pose = fds::Pose{0, 0, args.getZDistance(), 11, 184, 180};
 
@@ -167,8 +167,10 @@ int main(int argc, char* argv[])
     int tx = pose.tx + xOffset;
     int tx_max = 1000;
 
-    TrackbarAction handleX = [&object, &pose](int newTx) {
-        pose.setTx((newTx - xOffset) / 20.0);
+    float divider = 160.0;
+
+    TrackbarAction handleX = [&object, &pose, &divider](int newTx) {
+        pose.setTx((newTx - xOffset) / divider);
         object.setPose(pose);
     };
 
@@ -179,8 +181,8 @@ int main(int argc, char* argv[])
     int ty = pose.ty + yOffset;
     int ty_max = 1000;
 
-    TrackbarAction handleY = [&object, &pose](int newTy) {
-        pose.setTy((newTy - yOffset) / 20.0);
+    TrackbarAction handleY = [&object, &pose, &divider](int newTy) {
+        pose.setTy((newTy - yOffset) / divider);
         object.setPose(pose);
     };
 
@@ -190,8 +192,8 @@ int main(int argc, char* argv[])
     int tz = pose.tz;
     int tz_max = 1500;
 
-    TrackbarAction handleZ = [&object, &pose](int newTz) {
-        pose.setTz((newTz) / 10);
+    TrackbarAction handleZ = [&object, &pose, &divider](int newTz) {
+        pose.setTz((newTz) / divider);
         object.setPose(pose);
     };
 
@@ -276,8 +278,15 @@ int main(int argc, char* argv[])
                     Scalar(255, 255, 255),
                     1);
             putText(result,
-                    "or 'q' to quit",
+                    "'p' to pause",
                     Point(205, 285),
+                    FONT_HERSHEY_DUPLEX,
+                    1.0,
+                    Scalar(255, 255, 255),
+                    1);
+           putText(result,
+                    "or 'q' to quit",
+                    Point(205, 315),
                     FONT_HERSHEY_DUPLEX,
                     1.0,
                     Scalar(255, 255, 255),
